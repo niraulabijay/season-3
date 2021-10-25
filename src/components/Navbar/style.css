@@ -8,12 +8,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
 
-  .logoWrapper {
-    padding: 0 20px;
-  }
+.navbarContainer .logoWrapper {
+  padding: 0 20px;
+}
 
-  .navWrapper {
-    display: flex;
-  }
+.navbarContainer .navWrapper {
+  display: flex;
 }
