@@ -90,6 +90,7 @@ function App() {
     }  
     setSelectedAccount("");
     setBalance(null);
+    setNetErr(false);
   };
   return (
     <div className="App">
