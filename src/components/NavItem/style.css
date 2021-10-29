@@ -5,17 +5,18 @@
   color: white;
   position: relative;
   cursor: pointer;
+  height: fit-content;
 }
 
 .navWrapper a span {
   padding: 0 10px;
 }
 
-.navWrapper a:hover::after {
+.navWrapper span:hover::after {
   opacity: 1;
 }
 
-.navWrapper a::after {
+.navWrapper span::after {
   opacity: 0;
   position: absolute;
   content: "";
@@ -25,11 +26,19 @@
   right: 0;
   left: 0;
   bottom: 0;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.3) -45%, rgba(0, 0, 0, 0) 95.33%);
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.3) -45%,
+    rgba(0, 0, 0, 0) 95.33%
+  );
   border-radius: 10px;
 }
 
 .active {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.3) -45%, rgba(0, 0, 0, 0) 95.33%);
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.3) -45%,
+    rgba(0, 0, 0, 0) 95.33%
+  );
   border-radius: 10px;
 }

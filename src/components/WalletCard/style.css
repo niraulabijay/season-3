@@ -1,0 +1,48 @@
+.walletContainer {
+  background-color: rgba(200, 200, 200, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(200, 200, 200, 0.7);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px;
+  width: fit-content;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.walletContainer h3 {
+  margin: 0;
+}
+
+.walletContainer h5 {
+  margin: 5px;
+}
+
+.walletContainer span {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(100, 100, 100);
+}
+
+.walletContainer button {
+  align-self: center;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+  border: 2px solid rgb(55, 55, 155);
+  border-radius: 5px;
+  color: rgb(55, 55, 155);
+  font-weight: 700;
+  margin-top: 15px;
+}
+
+.walletContainer button:hover {
+  border: 2px solid rgb(55, 105, 155);
+  color: rgb(55, 105, 155);
+}
+
+.walletContainer button:active {
+  border: 2px solid rgb(55, 105, 55);
+  color: rgb(55, 105, 55);
+}
