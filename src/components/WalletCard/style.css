@@ -1,6 +1,5 @@
 .walletContainer {
   background-color: rgba(200, 200, 200, 0.3);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(200, 200, 200, 0.7);
   border-radius: 10px;
   padding: 20px;
