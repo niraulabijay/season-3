@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { StyleSheet, css } from "aphrodite";
+import { useContractContext, useWeb3Context } from "../../hooks";
+import { fetchErc20Balance } from "../../helpers/methods";
 
 type PoolProps = {
   isVisible: boolean;
@@ -8,7 +10,8 @@ type PoolProps = {
 };
 const PoolModal = ({ isVisible, onClose }: PoolProps) => {
   const styles = Styles();
-
+  const { address, connected } = useWeb3Context();
+  const { islaGauge, usdc } = useContractContext();
   const [active, setActive] = useState("deposit");
 
   const changeActive = (tabName: string) => {
@@ -26,9 +29,21 @@ const PoolModal = ({ isVisible, onClose }: PoolProps) => {
     );
   };
 
+  const getBalance = fetchErc20Balance();
+  useEffect(() => {
+    if (usdc && usdc.contract?.methods && address) {
+      const getTotalbalance = async () => {
+        const balance = await getBalance(usdc.contract, address);
+        usdc.decimal && console.log(balance / usdc.decimal);
+      };
+      getTotalbalance();
+    }
+  }, [usdc, address]);
+
   const checkTab = (tabName: string) => {
     return css(styles.tabItem, checkActive(tabName) ? styles.activeItem : null);
   };
+
   return (
     <Modal isVisible={isVisible} onClose={onClose}>
       <div className={css(styles.modalHeader)}>
@@ -57,7 +72,7 @@ const PoolModal = ({ isVisible, onClose }: PoolProps) => {
       </ul>
       <div className={checkContent("deposit")}>
         <div className={css(styles.title)}>Available: 0 ISLA</div>
-        <input type="text" className={css(styles.input)} />
+        <input type="text" className={css(styles.input)} value={0} />
         <div className={css(styles.footer)}>
           <button className={css(styles.densed)}>Deposit</button>
         </div>
@@ -66,8 +81,8 @@ const PoolModal = ({ isVisible, onClose }: PoolProps) => {
         <div className={css(styles.title)}>Deposited: 100 ISLA</div>
         <input type="text" className={css(styles.input)} />
         <div className={css(styles.title)}>Redeemable assets:</div>
-        <div className={css(styles.subTitle)}>BUSDC: amount</div>
-        <div className={css(styles.subTitle)}>ENS: amount</div>
+        <div className={css(styles.subTitle)}>BUSDC: 0</div>
+        <div className={css(styles.subTitle)}>ENS: 0</div>
         <div className={css(styles.footer)}>
           <button className={css(styles.outlined)}>Withdraw</button>
           <button className={css(styles.densed)}>Redeem all</button>

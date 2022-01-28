@@ -11,6 +11,8 @@ import { useState } from "react";
 import AnimalsModal from "../components/Modals/AnimalsModal";
 import PirateModal from "../components/Modals/PirateModal";
 import PoolModal from "../components/Modals/PoolModal";
+import BanyModal from "../components/Modals/BanyModal/BanyModal";
+import MintModal from "../components/Modals/MintModal/MintModal";
 
 const Home: NextPage = () => {
   const styles = Styles();
@@ -88,10 +90,12 @@ const Home: NextPage = () => {
         </span>
       </div>
 
-      <FactoryModal isVisible={openFactory} onClose={handleFactoryClose} />
+      {/* <FactoryModal isVisible={openFactory} onClose={handleFactoryClose}  /> */}
       <AnimalsModal isVisible={openAnimal} onClose={handleAnimalClose} />
       <PirateModal isVisible={openPirate} onClose={handlePirateClose} />
-      <PoolModal isVisible={openPool} onClose={handlePoolClose} />
+      {/* <PoolModal isVisible={openPool} onClose={handlePoolClose}  /> */}
+      <MintModal isVisible={openPool} onClose={handlePoolClose} />
+      <BanyModal isVisible={openFactory} onClose={handleFactoryClose} />
     </>
   );
 };
