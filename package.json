@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ethersproject/bignumber": "^5.5.0",
     "@ethersproject/providers": "^5.5.0",
     "@reduxjs/toolkit": "^1.6.2",
     "@walletconnect/web3-provider": "^1.6.6",

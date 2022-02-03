@@ -11,7 +11,7 @@ type PoolProps = {
 const PoolModal = ({ isVisible, onClose }: PoolProps) => {
   const styles = Styles();
   const { address, connected } = useWeb3Context();
-  const { islaGauge, usdc } = useContractContext();
+  const { islaGauge, usdc, usdt, dai } = useContractContext();
   const [active, setActive] = useState("deposit");
 
   const changeActive = (tabName: string) => {

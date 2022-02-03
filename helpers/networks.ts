@@ -44,6 +44,15 @@ export const daiNetwork:TokenDefinition = {
   logoURI: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png"
 }
 
+export const bAnyMinterNetwork:TokenDefinition = {
+  name: "BANY Minter",
+  address: "0x1EEa918305a8C241fF1e9EE1F4694d5150bF0177",
+  symbol: "BANY Minter",
+  decimals: 0,
+  chainId: 137,
+  logoURI: ""
+}
+
 export const bondingTokens = [
   daiNetwork, usdcNetwork, usdtNetwork
 ];
