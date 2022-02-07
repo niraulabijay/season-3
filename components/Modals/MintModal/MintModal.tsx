@@ -1,45 +1,53 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../Modal";
 import { StyleSheet, css } from "aphrodite";
-import { useContractContext, useWeb3Context } from "../../../hooks";
+import { useAddress, useContractContext, useWeb3Context } from "../../../hooks";
 import { Styles } from "./Style";
-import { Contract } from "web3-eth-contract";
-import { AbiItem } from "web3-utils";
+import { Contract, ethers } from "ethers";
 import SelectToken from "../SelectToken/SelectToken";
 import { TokenDefinition } from "../../../helpers/networks";
 import {
   approveErc20Spend,
   checkErc20Allowance,
   fetchErc20Balance,
+  getAnysAllowance,
+  getMintersAllowance,
   mintBany,
 } from "../../../helpers/methods";
+import { MaxUint256, Zero } from "@ethersproject/constants";
 import { UsableContract } from "../../../hooks/contract/contractContext";
 import { BigNumber } from "@ethersproject/bignumber";
 import Web3 from "web3";
+import { useTransactionAdder } from "../../../state/transactions/hooks";
+import { finalizeTransaction } from "../../../state/transactions/actions";
+import { useAppDispatch } from "../../../store/hooks";
+import { useChainId } from "../../../hooks/web3/web3Context";
+import { decimalToExact, exactToDecimal } from "../../../helpers/conversion";
 
 type PoolProps = {
   isVisible: boolean;
   onClose: () => void;
 };
 
-type ListContracts = {
-  [key: string]: UsableContract;
-};
-
 const MintModal = ({ isVisible, onClose }: PoolProps) => {
   const styles = Styles();
-  const { address } = useWeb3Context();
+  const address = useAddress();
+  const chainId = useChainId();
   const tokens = useContractContext();
-  // const [active, setActive] = useState("deposit");
+  const [currentAny, setCurrentAny] = useState<UsableContract | null>(null);
   const [openSelect, setOpenSelect] = useState(false);
   const [balance, setBalance] = useState(0);
   const [ibalance, setIbalance] = useState<number | string>(0);
+  const [totalanyLeft, setTotalanyLeft] = useState(0);
+  const [totalbanyLeft, setTotalbanyLeft] = useState(0);
   const [buttonStatus, setButtonStatus] = useState({
     error: "",
     mint: false,
     approve: false,
     disable: false,
   });
+  const transactionAdder = useTransactionAdder();
+  const dispatch = useAppDispatch();
 
   const [selectedToken, setSelectedToken] =
     React.useState<TokenDefinition | null>(null);
@@ -73,78 +81,140 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const getBalance = fetchErc20Balance();
   const checkAllowance = checkErc20Allowance();
+  const getAnyLeftBalance = getAnysAllowance();
+  const getbAnyLeftBalance = getMintersAllowance();
 
-  const getTotalbalance = async (token: string) => {
-    const balance = await getBalance(tokens[token].contract, address);
-    tokens[token].decimal &&
-      setBalance(balance / 10 ** (tokens[token]?.decimal || 0));
+  const getTotalbalance = async (currentToken: UsableContract) => {
+    const balance = await getBalance(currentToken.contract, address);
+    let userBalance;
+    if (currentToken && currentToken.decimal) {
+      const userBalance = decimalToExact(balance, currentToken.decimal);
+      setBalance(userBalance);
+    } else {
+      userBalance = 0;
+      setBalance(userBalance);
+    }
   };
 
-  const checkTokenAllowance = async (token: string) => {
-    const allowance = await checkAllowance(
-      tokens[token].contract,
-      tokens?.bAnyMinter?.address,
-      address
-    );
-    if (allowance > ibalance && ibalance > 0) {
-      setButtonStatus({ ...buttonStatus, disable: false, mint: true });
-    } else if (allowance > ibalance) {
-      setButtonStatus({
-        ...buttonStatus,
-        mint: true,
-        approve: false,
-        disable: true,
-      });
-    } else {
-      setButtonStatus({
-        ...buttonStatus,
-        approve: true,
-        mint: false,
-        disable: false,
-      });
+  const getAnyLeft = async (any: UsableContract) => {
+    const anyAddress = any.address;
+    try {
+      if (any.decimal) {
+        const anyLeft = await getAnyLeftBalance(
+          tokens["treasuryTba"].contract,
+          anyAddress
+        );
+        const totalAnyLeft = decimalToExact(anyLeft, any.decimal);
+        setTotalanyLeft(totalAnyLeft);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getbAnyLeft = async () => {
+    const bAnyminterAddress = tokens["bAnyMinter"].address;
+    try {
+      if (tokens["bAnyMinter"].decimal) {
+        const banyLeft = await getbAnyLeftBalance(
+          tokens["treasuryTba"].contract,
+          bAnyminterAddress
+        );
+        const totalbAnyLeft = decimalToExact(
+          banyLeft,
+          tokens["bAnyMinter"].decimal
+        );
+        setTotalbanyLeft(totalbAnyLeft);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const checkTokenAllowance = async (currentToken: UsableContract) => {
+    if (currentToken && currentToken.contract && currentToken.decimal) {
+      const allowance = await checkAllowance(
+        currentToken.contract,
+        tokens["bAnyMinter"].address,
+        address
+      );
+      console.log(allowance);
+      const anyToApprove = exactToDecimal(1000, currentToken.decimal);
+      if (allowance.gt(anyToApprove)) {
+        setButtonStatus({ ...buttonStatus, disable: false, mint: true });
+      } else if (allowance > ibalance) {
+        setButtonStatus({
+          ...buttonStatus,
+          mint: false,
+          approve: true,
+          disable: true,
+        });
+      } else {
+        setButtonStatus({
+          ...buttonStatus,
+          approve: true,
+          mint: false,
+          disable: false,
+        });
+      }
     }
   };
 
   useEffect(() => {
     Object.keys(tokens).map((token) => {
       if (selectedToken?.address == tokens[token].address) {
-        getTotalbalance(token);
-        checkTokenAllowance(token);
-        // tokens[token].contract?.events
-        //   .Approval({
-        //     filter: { from: address, to: tokens.bAnyMinter.address },
-        //     fromBlock: "latest",
-        //   })
-        //   .on("data", (event: any) => console.log(event,'1'))
-        //   .on("connected", (event: any) => console.log(event,'2'))
-        //   .on("error", (error: any) => console.log(error,'3'));
+        setIbalance(0);
+        setCurrentAny(tokens[token]);
+        getTotalbalance(tokens[token]);
+        getAnyLeft(tokens[token]);
+        getbAnyLeft();
+        checkTokenAllowance(tokens[token]);
       }
     });
-  }, [selectedToken, address, buttonStatus?.mint]);
+  }, [selectedToken, address]);
 
   const ButtonDisplay = () => {
-    if (ibalance > balance) {
-      return (
-        <button className={css(styles.densed)}>
-          Insufficient {selectedToken?.symbol} balance
-        </button>
-      );
-    } else if (buttonStatus.mint && !buttonStatus.disable) {
-      return (
-        <button className={css(styles.densed)} onClick={handleMint}>
-          Mint BANY
-        </button>
-      );
-    } else if (buttonStatus.approve && !buttonStatus.disable) {
-      return (
-        <button className={css(styles.densed)} onClick={handleApprove}>
-          Approve
-        </button>
-      );
+    if (currentAny) {
+      if (ibalance > balance) {
+        return (
+          <button className={css(styles.densed)} onClick={handleApprove}>
+            Insufficient {selectedToken?.symbol} balance
+          </button>
+        );
+      } else if (ibalance == 0) {
+        return (
+          <button className={css(styles.densed)} disabled>
+            Enter Amount
+          </button>
+        );
+      } else {
+        if (buttonStatus.mint && !buttonStatus.disable) {
+          return (
+            <button className={css(styles.densed)} onClick={handleMint}>
+              Mint BANY
+            </button>
+          );
+        } else if (
+          (buttonStatus.approve && !buttonStatus.disable) ||
+          (buttonStatus.approve && ibalance > 0)
+        ) {
+          return (
+            <button className={css(styles.densed)} onClick={handleApprove}>
+              Approve
+            </button>
+          );
+        } else {
+          return (
+            <button className={css(styles.densed)} disabled>
+              Error
+            </button>
+          );
+        }
+      }
     } else {
       return (
         <button className={css(styles.densed)} disabled>
-          Enter Amount
+          Select Any Token
         </button>
       );
     }
@@ -154,43 +224,134 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
   const checkMintResponse = mintBany();
 
   const handleApprove = () => {
-    Object.keys(tokens).map((token) => {
-      if (selectedToken?.address == tokens[token].address) {
-        getApproveResponse(tokens[token].contract);
-      }
-    });
+    if (currentAny && currentAny.signer && currentAny.contract) {
+      const signedContract = currentAny.contract.connect(currentAny.signer);
+      getApproveResponse(signedContract);
+    } else {
+      alert("Initializing...Please wait");
+    }
   };
 
   const handleMint = () => {
-    getMintResponse(tokens?.bAnyMinter?.contract);
+    if (
+      tokens["bAnyMinter"] &&
+      tokens["bAnyMinter"].contract &&
+      tokens["bAnyMinter"].signer
+    ) {
+      const signedContract = tokens["bAnyMinter"].contract.connect(
+        tokens["bAnyMinter"].signer
+      );
+      getMintResponse(signedContract);
+    }
   };
 
   function decimalToHex(d: any, decimal: number) {
-    const web3 = new Web3(Web3.givenProvider);
     let tokens = BigNumber.from(d * 10 ** decimal);
     return tokens;
   }
 
   const getMintResponse = async (contract: Contract | null) => {
-    const actualAmount = decimalToHex(ibalance, selectedToken?.decimals || 0);
-    const res = await checkMintResponse(
-      contract,
-      address,
-      selectedToken?.address || "",
-      actualAmount
-    );
-    console.log(res);
+    if (ibalance && currentAny && currentAny.decimal) {
+      const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
+      try {
+        const res = await checkMintResponse(
+          contract,
+          address,
+          currentAny.address,
+          actualAmount
+        );
+        transactionAdder(res, {
+          summary: "Mint BAny",
+        });
+        const { hash } = res;
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        provider
+          .waitForTransaction(hash)
+          .then((receipt) => {
+            dispatch(
+              finalizeTransaction({
+                chainId: chainId,
+                hash: hash,
+                receipt: {
+                  blockHash: receipt.blockHash,
+                  blockNumber: receipt.blockNumber,
+                  contractAddress: receipt.contractAddress,
+                  from: receipt.from,
+                  status: receipt.status,
+                  to: receipt.to,
+                  transactionHash: receipt.transactionHash,
+                  transactionIndex: receipt.transactionIndex,
+                },
+              })
+            );
+            // check Any Balance here
+          })
+          .catch((err) => {
+            dispatch(
+              finalizeTransaction({
+                chainId,
+                hash,
+                receipt: "failed",
+              })
+            );
+          });
+      } catch (err) {
+        console.log(err, "Mint error");
+      }
+    }
   };
 
   const getApproveResponse = async (contract: Contract | null) => {
-    const actualAmount = decimalToHex(1000, selectedToken?.decimals || 0);
-    const res = await checkApproveResponse(
-      contract,
-      address,
-      tokens.bAnyMinter?.address,
-      actualAmount
-    );
-    console.log(res);
+    if (currentAny && currentAny.decimal) {
+      // const actualAmount = MaxUint256;
+      const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
+      const res = await checkApproveResponse(
+        contract,
+        address,
+        tokens["bAnyMinter"].address,
+        actualAmount
+      );
+      transactionAdder(res, {
+        summary: "Approve " + currentAny.symbol,
+        approval: {
+          tokenAddress: currentAny.address,
+          spender: tokens["bAnyMinter"].address,
+        },
+      });
+      const { hash } = res;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      provider
+        .waitForTransaction(hash)
+        .then((receipt) => {
+          console.log("Transaction Mined: ", receipt);
+          dispatch(
+            finalizeTransaction({
+              chainId: chainId,
+              hash: hash,
+              receipt: {
+                blockHash: receipt.blockHash,
+                blockNumber: receipt.blockNumber,
+                contractAddress: receipt.contractAddress,
+                from: receipt.from,
+                status: receipt.status,
+                to: receipt.to,
+                transactionHash: receipt.transactionHash,
+                transactionIndex: receipt.transactionIndex,
+              },
+            })
+          );
+          checkTokenAllowance(currentAny);
+        })
+        .catch((err) => {
+          dispatch(
+            finalizeTransaction({
+              chainId,
+              hash,
+              receipt: "failed",
+            })
+          );
+        });
+    }
   };
 
   return (
@@ -224,19 +385,14 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
               <div className={css(styles.maxBtn)} onClick={handleMaximum}>
                 Max
               </div>
-              {selectedToken?.symbol ? (
+              {currentAny?.symbol ? (
                 <div
                   className={css(styles.tokenList)}
                   onClick={handleSelectOpen}
                 >
-                  <img
-                    src={selectedToken?.logoURI}
-                    alt=""
-                    height="25"
-                    width="25"
-                  />
+                  <img src={currentAny?.logo} alt="" height="25" width="25" />
                   <span className={css(styles.tokenName)}>
-                    {selectedToken?.symbol}
+                    {currentAny?.symbol}
                   </span>
                   <svg
                     width="16"
@@ -273,10 +429,10 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
           </div>
           <div>
             <div className={css(styles.subTitle)}>
-              BANY Left to Mint: <strong>2000</strong>
+              BANY Left to Mint: <strong>{totalbanyLeft}</strong>
             </div>
             <div className={css(styles.subTitle)}>
-              Max USDT: <strong>3000</strong>
+              Max {selectedToken?.symbol}: <strong>{totalanyLeft}</strong>
             </div>
           </div>
 
@@ -295,21 +451,3 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 };
 
 export default MintModal;
-
-// type UsableContract = {
-//   name: string;
-//   symbol: string;
-//   logo: string;
-//   contract: Contract | null;
-//   abi: AbiItem[];
-//   address: string;
-//   decimal: number | null;
-// };
-
-// type ContextProps = {
-//   islaGauge: UsableContract | null;
-//   usdc: UsableContract | null;
-//   usdt: UsableContract | null;
-//   dai: UsableContract | null;
-//   islaGauge: UsableContract | null;
-// }

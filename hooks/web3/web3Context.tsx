@@ -13,6 +13,7 @@ import {
 } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { switchNetwork } from "../../helpers/switchNetwork";
+import { ethers } from "ethers";
 
 type onChainProvider = {
   connect: () => Promise<Web3Provider>;
@@ -50,6 +51,11 @@ export const useWeb3Context = () => {
 export const useAddress = () => {
   const { address } = useWeb3Context();
   return address;
+};
+
+export const useChainId = () => {
+  const { providerChainID } = useWeb3Context();
+  return providerChainID;
 };
 
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
@@ -120,7 +126,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       _initListeners(rawProvider);
 
-      const connectedProvider = new Web3Provider(rawProvider, "any");
+      const connectedProvider = new ethers.providers.Web3Provider(rawProvider);
 
       const chainId = await connectedProvider
         .getNetwork()

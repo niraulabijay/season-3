@@ -1,4 +1,4 @@
-import { Contract } from "web3-eth-contract";
+import { Contract } from "ethers";
 
 export async function evaluateTransaction(
   contract: Contract | null,
@@ -6,9 +6,8 @@ export async function evaluateTransaction(
   args: Array<string | number>
 ): Promise<any> {
 try {
-  const methods = await contract?.methods
-  const bcValues = await methods?.[methodName](...args)
-  return bcValues.call()
+  const bcValues = await contract?.[methodName](...args)
+  return bcValues
 } catch (e) {
    console.log(e)
    return e

@@ -1,17 +1,15 @@
 import { BigNumber } from "@ethersproject/bignumber";
-import { Contract } from "web3-eth-contract";
+import { Contract } from "ethers";
 
 export async function submitTransaction(
     contract: Contract | null,
     account: string, 
     methodsName: string,
-    args: Array<string | number | BigNumber>,
+    args: Array<string | number | BigNumber | Array<any>>,
     ): Promise<any>{
     try {
-        const callData =   contract?.methods?.[methodsName](...args)
-        return callData.send({
-            from: account ? account : undefined,
-        })
+        const callData =  contract?.[methodsName](...args)
+        return callData
     } catch (e) {
       console.log(e)
       return e

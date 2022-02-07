@@ -5,19 +5,20 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { AbiItem } from "web3-utils";
-import Web3 from "web3";
-import { Contract } from "web3-eth-contract";
+import { Contract, ContractInterface, ethers } from "ethers";
 import IslaGaugeAbi from "../../contracts/islagauge.json";
 import bAnyMinterAbi from "../../contracts/bAnyMinter.json";
 import Erc20Abi from "../../contracts/erc20.json";
+import treasuryTbaAbi from "../../contracts/treasuryTba.json";
 import {
   bAnyMinterNetwork,
   daiNetwork,
   islaGaugeNetwork,
+  treasuryTbaNetwork,
   usdcNetwork,
   usdtNetwork,
 } from "../../helpers/networks";
+import { JsonRpcSigner } from "@ethersproject/providers";
 
 export const useContractContext = () => {
   const contractContext = useContext(ContractContext);
@@ -46,7 +47,8 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       decimal: islaGaugeNetwork.decimals,
       contract: null,
       logo: islaGaugeNetwork.logoURI,
-      abi: IslaGaugeAbi as AbiItem[],
+      abi: IslaGaugeAbi,
+      signer: null,
     });
     const [usdt, setUsdt] = useState<UsableContract>({
       name: usdtNetwork.name,
@@ -55,7 +57,8 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       decimal: usdtNetwork.decimals,
       contract: null,
       logo: usdtNetwork.logoURI,
-      abi: Erc20Abi as AbiItem[],
+      abi: Erc20Abi,
+      signer: null,
     });
     const [usdc, setUsdc] = useState<UsableContract>({
       name: usdcNetwork.name,
@@ -64,7 +67,8 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       decimal: usdcNetwork.decimals,
       contract: null,
       logo: usdcNetwork.logoURI,
-      abi: Erc20Abi as AbiItem[],
+      abi: Erc20Abi,
+      signer: null,
     });
     const [dai, setDai] = useState<UsableContract>({
       name: daiNetwork.name,
@@ -73,7 +77,8 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       decimal: daiNetwork.decimals,
       contract: null,
       logo: daiNetwork.logoURI,
-      abi: Erc20Abi as AbiItem[],
+      abi: Erc20Abi,
+      signer: null,
     });
     const [bAnyMinter, setBanyMinter] = useState<UsableContract>({
       name: bAnyMinterNetwork.name,
@@ -82,25 +87,62 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       decimal: bAnyMinterNetwork.decimals,
       contract: null,
       logo: bAnyMinterNetwork.logoURI,
-      abi: bAnyMinterAbi as AbiItem[],
+      abi: bAnyMinterAbi,
+      signer: null,
+    });
+    const [treasuryTba, setTreasuryTba] = useState<UsableContract>({
+      name: treasuryTbaNetwork.name,
+      address: treasuryTbaNetwork.address,
+      symbol: treasuryTbaNetwork.symbol,
+      decimal: treasuryTbaNetwork.decimals,
+      contract: null,
+      logo: treasuryTbaNetwork.logoURI,
+      abi: treasuryTbaAbi,
+      signer: null,
     });
     useEffect(() => {
-      const web3 = new Web3(Web3.givenProvider);
-      const islaContract = new web3.eth.Contract(
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const islaContract = new ethers.Contract(
+        islaGauge.address,
         islaGauge.abi,
-        islaGauge.address
+        provider
       );
-      const usdcContract = new web3.eth.Contract(usdc.abi, usdc.address);
-      const usdtContract = new web3.eth.Contract(usdt.abi, usdt.address);
-      const daiContract = new web3.eth.Contract(dai.abi, dai.address);
-      const bAnyMinterContract = new web3.eth.Contract(bAnyMinter.abi, bAnyMinter.address);
-      setIslaGauge({ ...islaGauge, contract: islaContract });
-      setUsdc({ ...usdc, contract: usdcContract });
-      setUsdt({ ...usdt, contract: usdtContract });
-      setDai({ ...dai, contract: daiContract });
-      setBanyMinter({...bAnyMinter, contract: bAnyMinterContract});
-
-     
+      const usdcContract = new ethers.Contract(
+        usdc.address,
+        usdc.abi,
+        provider
+      );
+      const usdtContract = new ethers.Contract(
+        usdt.address,
+        usdt.abi,
+        provider
+      );
+      const daiContract = new ethers.Contract(dai.address, dai.abi, provider);
+      const bAnyMinterContract = new ethers.Contract(
+        bAnyMinter.address,
+        bAnyMinter.abi,
+        provider
+      );
+      const treasuryTbaContract = new ethers.Contract(
+        treasuryTba.address,
+        treasuryTba.abi,
+        provider
+      );
+      setIslaGauge({ ...islaGauge, contract: islaContract, signer: signer });
+      setUsdc({ ...usdc, contract: usdcContract, signer: signer });
+      setUsdt({ ...usdt, contract: usdtContract, signer: signer });
+      setDai({ ...dai, contract: daiContract, signer: signer });
+      setBanyMinter({
+        ...bAnyMinter,
+        contract: bAnyMinterContract,
+        signer: signer,
+      });
+      setTreasuryTba({
+        ...treasuryTba,
+        contract: treasuryTbaContract,
+        signer: signer,
+      });
     }, []);
 
     const contractProvider = useMemo(
@@ -109,12 +151,22 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         usdc,
         usdt,
         dai,
-        bAnyMinter
+        bAnyMinter,
+        treasuryTba,
       }),
-      [islaGauge, usdc, usdt, dai, bAnyMinter]
+      [islaGauge, usdc, usdt, dai, bAnyMinter, treasuryTba]
     );
     return (
-      <ContractContext.Provider value={{ "islaGauge": islaGauge, "usdc":usdc, "usdt": usdt, "dai":dai, "bAnyMinter": bAnyMinter }}>
+      <ContractContext.Provider
+        value={{
+          islaGauge: contractProvider.islaGauge,
+          usdc: contractProvider.usdc,
+          usdt: contractProvider.usdt,
+          dai: contractProvider.dai,
+          bAnyMinter: contractProvider.bAnyMinter,
+          treasuryTba: contractProvider.treasuryTba,
+        }}
+      >
         {children}
       </ContractContext.Provider>
     );
@@ -125,7 +177,7 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
 };
 
 type ContractContextData = {
-  [key:string]: UsableContract;
+  [key: string]: UsableContract;
 } | null;
 
 export type UsableContract = {
@@ -133,7 +185,8 @@ export type UsableContract = {
   symbol: string;
   logo: string;
   contract: Contract | null;
-  abi: AbiItem[];
+  abi: ContractInterface;
   address: string;
   decimal: number | null;
+  signer: null | JsonRpcSigner;
 };
