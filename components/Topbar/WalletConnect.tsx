@@ -3,7 +3,9 @@ import { StyleSheet, css } from "aphrodite";
 import Image from "next/image";
 import matic from "../../public/matic.svg";
 import times from "../../public/icons/times.svg";
-import { useWeb3Context } from "../../hooks";
+import { useContractContext, useWeb3Context } from "../../hooks";
+import { getTreasuryTba } from "../../helpers/methods";
+import { decimalToExact } from "../../helpers/conversion";
 
 const WalletConnect = () => {
   const {
@@ -15,8 +17,11 @@ const WalletConnect = () => {
     checkWrongNetwork,
     hasCachedProvider,
   } = useWeb3Context();
+  const tokens = useContractContext();
 
   const [isConnected, setConnected] = useState(connected);
+  const [tba, setTba] = useState<number | null>(null);
+  const getTba = getTreasuryTba();
 
   let buttonText = "Connect Wallet";
   let clickFunc: any = connect;
@@ -50,12 +55,23 @@ const WalletConnect = () => {
     setConnected(connected);
   }, [connected]);
 
+  useEffect(() => {
+    if (isConnected) {
+      const getTbaBalance = async () => {
+        const tba = await getTba(tokens["treasuryTba"].contract);
+        const tbaNumber = decimalToExact(tba, tokens["bAnyToken"].decimal ?? 0);
+        setTba(tbaNumber);
+      };
+      getTbaBalance();
+    }
+  }, [isConnected]);
+
   const styles = Styles(buttonText);
 
   return (
     <div className={css(styles.container)}>
       <button className={css(styles.balance)}>1 BANY</button>
-      <button className={css(styles.balance)}>100 TBA</button>
+      <button className={css(styles.balance)}>{tba} TBA</button>
       {isConnected && buttonText !== "Wrong Network" && (
         <button className={css(styles.balance)}>0.00 ISLA</button>
       )}

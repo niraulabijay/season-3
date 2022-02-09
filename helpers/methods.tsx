@@ -100,3 +100,9 @@ export const getMintersAllowance = (): ((
     []
   );
 };
+
+export const getTreasuryTba = (): ((contract: Contract | null) => any) => {
+  return useCallback(async (contract: Contract | null) => {
+    return await evaluateTransaction(contract, "getTBA", []);
+  }, []);
+};

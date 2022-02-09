@@ -63,6 +63,15 @@ export const treasuryTbaNetwork: TokenDefinition = {
   logoURI: ""
 }
 
+export const bAnyNetwork: TokenDefinition = {
+  name:"Backed Any",
+  address: "0xD51a5153f21D035CfBEBf640666f9A79d4d2BaF5",
+  symbol:"BANY",
+  decimals: 18,
+  chainId:137,
+  logoURI:"",
+}
+
 export const bondingTokens = [
   daiNetwork, usdcNetwork, usdtNetwork
 ];

@@ -10,8 +10,10 @@ import IslaGaugeAbi from "../../contracts/islagauge.json";
 import bAnyMinterAbi from "../../contracts/bAnyMinter.json";
 import Erc20Abi from "../../contracts/erc20.json";
 import treasuryTbaAbi from "../../contracts/treasuryTba.json";
+import bAnyTokenAbi from "../../contracts/bAny.json";
 import {
   bAnyMinterNetwork,
+  bAnyNetwork,
   daiNetwork,
   islaGaugeNetwork,
   treasuryTbaNetwork,
@@ -100,6 +102,16 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       abi: treasuryTbaAbi,
       signer: null,
     });
+    const [bAnyToken, setbAnyToken] = useState<UsableContract>({
+      name: bAnyNetwork.name,
+      address: bAnyNetwork.address,
+      symbol: bAnyNetwork.symbol,
+      decimal: bAnyNetwork.decimals,
+      contract: null,
+      logo: bAnyNetwork.logoURI,
+      abi: bAnyTokenAbi,
+      signer: null,
+    });
     useEffect(() => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -129,6 +141,11 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         treasuryTba.abi,
         provider
       );
+      const bAnyContract = new ethers.Contract(
+        bAnyToken.address,
+        bAnyToken.abi,
+        provider
+      );
       setIslaGauge({ ...islaGauge, contract: islaContract, signer: signer });
       setUsdc({ ...usdc, contract: usdcContract, signer: signer });
       setUsdt({ ...usdt, contract: usdtContract, signer: signer });
@@ -143,6 +160,11 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         contract: treasuryTbaContract,
         signer: signer,
       });
+      setbAnyToken({
+        ...bAnyToken,
+        contract: bAnyContract,
+        signer: signer,
+      });
     }, []);
 
     const contractProvider = useMemo(
@@ -153,8 +175,9 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         dai,
         bAnyMinter,
         treasuryTba,
+        bAnyToken,
       }),
-      [islaGauge, usdc, usdt, dai, bAnyMinter, treasuryTba]
+      [islaGauge, usdc, usdt, dai, bAnyMinter, treasuryTba, bAnyToken]
     );
     return (
       <ContractContext.Provider
@@ -165,6 +188,7 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
           dai: contractProvider.dai,
           bAnyMinter: contractProvider.bAnyMinter,
           treasuryTba: contractProvider.treasuryTba,
+          bAnyToken: contractProvider.bAnyToken,
         }}
       >
         {children}
