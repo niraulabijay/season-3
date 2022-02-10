@@ -4,7 +4,7 @@ import Image from "next/image";
 import matic from "../../public/matic.svg";
 import times from "../../public/icons/times.svg";
 import { useContractContext, useWeb3Context } from "../../hooks";
-import { getTreasuryTba } from "../../helpers/methods";
+import { fetchErc20Balance, getTreasuryTba } from "../../helpers/methods";
 import { decimalToExact } from "../../helpers/conversion";
 
 const WalletConnect = () => {
@@ -21,7 +21,28 @@ const WalletConnect = () => {
 
   const [isConnected, setConnected] = useState(connected);
   const [tba, setTba] = useState<number | null>(null);
+  const [islaTotalBalance, setIslaTotalBalance] = useState(0);
+  const [banyTotalBalance, setBanyTotalBalance] = useState(0);
   const getTba = getTreasuryTba();
+  const getBalance = fetchErc20Balance();
+
+  const getTotalBalance = async () => {
+    const banyBalance = await getBalance(tokens["bAnyToken"].contract, address);
+    const islaBalance = await getBalance(tokens["islaGauge"].contract, address);
+    let userBanyBalance;
+    let userIslaBalance;
+    if (tokens && tokens["bAnyToken"].decimal && tokens["islaGauge"].decimal) {
+      const userBanyBalance = decimalToExact(banyBalance, tokens["bAnyToken"].decimal);
+      const userIslaBalance = decimalToExact(islaBalance, tokens["islaGauge"].decimal);
+      setIslaTotalBalance(userIslaBalance);
+      setBanyTotalBalance(userBanyBalance)
+    } else {
+      userBanyBalance = 0;
+      userIslaBalance = 0;
+      setBanyTotalBalance(userBanyBalance);
+      setIslaTotalBalance(userIslaBalance);
+    }
+  };
 
   let buttonText = "Connect Wallet";
   let clickFunc: any = connect;
@@ -56,24 +77,29 @@ const WalletConnect = () => {
   }, [connected]);
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && address && providerChainID == 137) {
       const getTbaBalance = async () => {
+        // console.log('apple')
         const tba = await getTba(tokens["treasuryTba"].contract);
         const tbaNumber = decimalToExact(tba, tokens["bAnyToken"].decimal ?? 0);
         setTba(tbaNumber);
       };
       getTbaBalance();
+      getTotalBalance();
     }
-  }, [isConnected]);
+
+  }, [isConnected, address, providerChainID]);
+
+
 
   const styles = Styles(buttonText);
 
   return (
     <div className={css(styles.container)}>
-      <button className={css(styles.balance)}>1 BANY</button>
+      <button className={css(styles.balance)}>{banyTotalBalance} BANY</button>
       <button className={css(styles.balance)}>{tba} TBA</button>
       {isConnected && buttonText !== "Wrong Network" && (
-        <button className={css(styles.balance)}>0.00 ISLA</button>
+        <button className={css(styles.balance)}>{islaTotalBalance} ISLA</button>
       )}
 
       <button className={css(styles.connectButton)} onClick={clickFunc}>

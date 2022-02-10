@@ -11,14 +11,14 @@ import { useState } from "react";
 import AnimalsModal from "../components/Modals/AnimalsModal";
 import PirateModal from "../components/Modals/PirateModal";
 import PoolModal from "../components/Modals/PoolModal";
-import BanyModal from "../components/Modals/BanyModal/BanyModal";
+import TreasuryModal from "../components/Modals/TreasuryModal/TreasuryModal";
 import MintModal from "../components/Modals/MintModal/MintModal";
 
 const Home: NextPage = () => {
   const styles = Styles();
   const [openFactory, setOpenFactory] = useState(false);
   const [openAnimal, setOpenAnimal] = useState(false);
-  const [openPool, setOpenPool] = useState(false);
+  const [openBanyMinter, setOpenBanyMinter] = useState(false);
   const [openPirate, setOpenPirate] = useState(false);
 
   const handleFactoryOpen = () => {
@@ -33,11 +33,11 @@ const Home: NextPage = () => {
   const handleAnimalClose = () => {
     setOpenAnimal(false);
   };
-  const handlePoolOpen = () => {
-    setOpenPool(true);
+  const handleBanyMinterOpen = () => {
+    setOpenBanyMinter(true);
   };
-  const handlePoolClose = () => {
-    setOpenPool(false);
+  const handleBanyMinterClose = () => {
+    setOpenBanyMinter(false);
   };
   const handlePirateOpen = () => {
     setOpenPirate(true);
@@ -69,7 +69,7 @@ const Home: NextPage = () => {
               className={css(styles.imageStyle)}
             />
           </div>
-          <div className={css(styles.pool)} onClick={handlePoolOpen}>
+          <div className={css(styles.pool)} onClick={handleBanyMinterOpen}>
             <Image
               src={pool}
               layout="fill"
@@ -94,8 +94,8 @@ const Home: NextPage = () => {
       <AnimalsModal isVisible={openAnimal} onClose={handleAnimalClose} />
       <PirateModal isVisible={openPirate} onClose={handlePirateClose} />
       {/* <PoolModal isVisible={openPool} onClose={handlePoolClose}  /> */}
-      <MintModal isVisible={openPool} onClose={handlePoolClose} />
-      <BanyModal isVisible={openFactory} onClose={handleFactoryClose} />
+      <MintModal isVisible={openBanyMinter} onClose={handleBanyMinterClose} />
+      <TreasuryModal isVisible={openFactory} onClose={handleFactoryClose} />
     </>
   );
 };

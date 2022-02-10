@@ -9,7 +9,7 @@ type PoolProps = {
   isVisible: boolean;
   onClose: () => void;
 };
-const BanyModal = ({ isVisible, onClose }: PoolProps) => {
+const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
   const styles = Styles();
   const { address } = useWeb3Context();
   const [active, setActive] = useState("deposit");
@@ -211,4 +211,4 @@ const BanyModal = ({ isVisible, onClose }: PoolProps) => {
   );
 };
 
-export default BanyModal;
+export default TreasuryModal;
