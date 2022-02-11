@@ -32,16 +32,28 @@ const WalletConnect = () => {
     let userBanyBalance;
     let userIslaBalance;
     if (tokens && tokens["bAnyToken"].decimal && tokens["islaGauge"].decimal) {
-      const userBanyBalance = decimalToExact(banyBalance, tokens["bAnyToken"].decimal);
-      const userIslaBalance = decimalToExact(islaBalance, tokens["islaGauge"].decimal);
+      const userBanyBalance = decimalToExact(
+        banyBalance,
+        tokens["bAnyToken"].decimal
+      );
+      const userIslaBalance = decimalToExact(
+        islaBalance,
+        tokens["islaGauge"].decimal
+      );
       setIslaTotalBalance(userIslaBalance);
-      setBanyTotalBalance(userBanyBalance)
+      setBanyTotalBalance(userBanyBalance);
     } else {
       userBanyBalance = 0;
       userIslaBalance = 0;
       setBanyTotalBalance(userBanyBalance);
       setIslaTotalBalance(userIslaBalance);
     }
+  };
+  const getTbaBalance = async () => {
+    // console.log('apple')
+    const tba = await getTba(tokens["treasuryTba"].contract);
+    const tbaNumber = decimalToExact(tba, tokens["bAnyToken"].decimal ?? 0);
+    setTba(tbaNumber);
   };
 
   let buttonText = "Connect Wallet";
@@ -77,20 +89,11 @@ const WalletConnect = () => {
   }, [connected]);
 
   useEffect(() => {
-    if (isConnected && address && providerChainID == 137) {
-      const getTbaBalance = async () => {
-        // console.log('apple')
-        const tba = await getTba(tokens["treasuryTba"].contract);
-        const tbaNumber = decimalToExact(tba, tokens["bAnyToken"].decimal ?? 0);
-        setTba(tbaNumber);
-      };
+    if (isConnected && connected && address && providerChainID == 137) {
       getTbaBalance();
       getTotalBalance();
     }
-
-  }, [isConnected, address, providerChainID]);
-
-
+  }, [connected, isConnected, address, providerChainID]);
 
   const styles = Styles(buttonText);
 

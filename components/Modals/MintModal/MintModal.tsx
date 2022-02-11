@@ -138,8 +138,7 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
         tokens["bAnyMinter"].address,
         address
       );
-      console.log(allowance);
-      const anyToApprove = exactToDecimal(1000, currentToken.decimal);
+      const anyToApprove = exactToDecimal(10000, currentToken.decimal);
       if (allowance.gt(anyToApprove)) {
         setButtonStatus({ ...buttonStatus, disable: false, mint: true });
       } else if (allowance > ibalance) {
@@ -245,11 +244,6 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
     }
   };
 
-  function decimalToHex(d: any, decimal: number) {
-    let tokens = BigNumber.from(d * 10 ** decimal);
-    return tokens;
-  }
-
   const getMintResponse = async (contract: Contract | null) => {
     if (ibalance && currentAny && currentAny.decimal) {
       const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
@@ -303,8 +297,8 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const getApproveResponse = async (contract: Contract | null) => {
     if (currentAny && currentAny.decimal) {
-      // const actualAmount = MaxUint256;
-      const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
+      const actualAmount = MaxUint256;
+      // const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
       const res = await checkApproveResponse(
         contract,
         address,
