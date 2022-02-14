@@ -108,6 +108,9 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
           <button className={css(styles.densed)}>Withdraw BANY</button>
         </div>
       </div>
+
+      {/* Borrow */}
+
       <div className={checkContent("borrow")}>
         <div className={css(styles.mintInputWrapper)}>
           <div className={css(styles.mintTitle)}>
@@ -155,6 +158,9 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
           <button className={css(styles.densed)}>Borrow</button>
         </div>
       </div>
+
+      {/* Repay */}
+
       <div className={checkContent("repay")}>
         <div className={css(styles.mintInputWrapper)}>
           <div className={css(styles.mintTitle)}>
@@ -202,6 +208,7 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
           <button className={css(styles.densed)}>Repay</button>
         </div>
       </div>
+      
       <SelectToken
         isVisible={openSelect}
         onClose={handleSelectClose}

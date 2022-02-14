@@ -114,16 +114,20 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const getbAnyLeft = async () => {
     const bAnyminterAddress = tokens["bAnyMinter"].address;
+    console.log(bAnyminterAddress)
     try {
-      if (tokens["bAnyMinter"].decimal) {
+      // console.log(tokens["bAnyMinter"].decimal)
+      if (tokens["bAnyToken"].decimal) {
         const banyLeft = await getbAnyLeftBalance(
           tokens["treasuryTba"].contract,
           bAnyminterAddress
         );
         const totalbAnyLeft = decimalToExact(
           banyLeft,
-          tokens["bAnyMinter"].decimal
+          tokens["bAnyToken"].decimal
         );
+        console.log(totalbAnyLeft, 'bany')
+        console.log(banyLeft)
         setTotalbanyLeft(totalbAnyLeft);
       }
     } catch (err) {
@@ -138,7 +142,6 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
         tokens["bAnyMinter"].address,
         address
       );
-      console.log(allowance);
       const anyToApprove = exactToDecimal(1000, currentToken.decimal);
       if (allowance.gt(anyToApprove)) {
         setButtonStatus({ ...buttonStatus, disable: false, mint: true });
