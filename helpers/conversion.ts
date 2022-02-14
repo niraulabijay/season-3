@@ -6,9 +6,12 @@ export const decimalToExact = (value:BigNumber, decimals:number) => {
     "1",
     decimals
   );
-  const exactValueBigNumber = value.mul("10000").div(decimalValue);
-  const exactValue = parseFloat(ethers.utils.formatUnits(exactValueBigNumber, 4));
-  return exactValue;
+  if(value && value instanceof BigNumber){
+    const exactValueBigNumber = value.mul("10000").div(decimalValue);
+    const exactValue = parseFloat(ethers.utils.formatUnits(exactValueBigNumber, 4));
+    return exactValue;
+  }
+  return 0;
 }
 
 // Convert user readable to decimal zeros amount (eg: ether (integer/float) to wei (BN))
