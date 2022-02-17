@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../Modal";
 import { css } from "aphrodite";
-import { useWeb3Context } from "../../../hooks";
+import { useAddress, useContractContext, useWeb3Context } from "../../../hooks";
 import { Styles } from "./Styles";
 import SelectToken from "../SelectToken/SelectToken";
+import Deposit from "./Tabs/Deposit";
+import Withdraw from "./Tabs/Withdraw";
+import Borrow from "./Tabs/Borrow";
+import { TokenDefinition } from "../../../helpers/networks";
+import Repay from "./Tabs/Repay";
 
 type PoolProps = {
   isVisible: boolean;
@@ -11,14 +16,12 @@ type PoolProps = {
 };
 const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
   const styles = Styles();
-  const { address } = useWeb3Context();
+  const address = useAddress();
+  const tokens = useContractContext();
   const [active, setActive] = useState("deposit");
   const [openSelect, setOpenSelect] = useState(false);
-  const [selectedToken, setSelectedToken] = useState({
-    id: 0,
-    name: "",
-    image: "",
-  });
+  const [selectedToken, setSelectedToken] =
+    React.useState<TokenDefinition | null>(null);
 
   const handleSelectOpen = () => {
     setOpenSelect(true);
@@ -81,133 +84,34 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
           Repay
         </li>
       </ul>
-      <div className={checkContent("deposit")}>
-        <div className={css(styles.title)}>Available: 0 BANY</div>
-        <div className={css(styles.mintFullInnerWrap)}>
-          <input type="text" className={css(styles.input)} placeholder="0.00" />
-          <div className={css(styles.maxFullBtn)}>Max</div>
-        </div>
-        <div className={css(styles.footer)}>
-          <button className={css(styles.densed)}>Deposit</button>
-        </div>
-      </div>
+
+      {/* Deposit */}
+
+      <Deposit checkContent={checkContent} address={address} tokens={tokens} />
 
       {/* Withdraw */}
 
-      <div className={checkContent("withdraw")}>
-        <div className={css(styles.title)}>Deposited: 100 BANY</div>
-        <div className={css(styles.mintFullInnerWrap)}>
-          <input type="text" className={css(styles.input)} placeholder="0.00" />
-          <div className={css(styles.maxFullBtn)}>Max</div>
-        </div>
-        <div className={css(styles.title)}>Withdraw Allowed Assets:</div>
-        <div className={css(styles.subTitle)}>BANY: amount</div>
-        <div className={css(styles.subTitle)}>Repay Amount: amount</div>
-        <div className={css(styles.footer)}>
-          {/* <button className={css(styles.outlined)}>Withdraw</button> */}
-          <button className={css(styles.densed)}>Withdraw BANY</button>
-        </div>
-      </div>
+      <Withdraw checkContent={checkContent} address={address} tokens={tokens} />
 
       {/* Borrow */}
 
-      <div className={checkContent("borrow")}>
-        <div className={css(styles.mintInputWrapper)}>
-          <div className={css(styles.mintTitle)}>
-            <span>Available: 0 {selectedToken?.name || ""}</span>
-            <span className={css(styles.from)}>From</span>
-          </div>
-          <div className={css(styles.mintInnerWrap)}>
-            <input
-              type="text"
-              className={css(styles.input)}
-              placeholder="0.00"
-            />
-            <div className={css(styles.maxBtn)}>Max</div>
-            {selectedToken?.name ? (
-              <div className={css(styles.tokenList)} onClick={handleSelectOpen}>
-                <img src={selectedToken?.image} alt="" height="25" width="25" />
-                <span className={css(styles.tokenName)}>
-                  {selectedToken?.name}
-                </span>
-                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
-                  <path
-                    d="M0.97168 1L6.20532 6L11.439 1"
-                    stroke="#AEAEAE"
-                  ></path>
-                </svg>
-              </div>
-            ) : (
-              <div
-                className={css(styles.tokenDefaultList)}
-                onClick={handleSelectOpen}
-              >
-                <span className={css(styles.tokenName)}>Select Token</span>
-                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
-                  <path
-                    d="M0.97168 1L6.20532 6L11.439 1"
-                    stroke="#AEAEAE"
-                  ></path>
-                </svg>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className={css(styles.subTitle)}>Borrowed Any: 10 amount</div>
-        <div className={css(styles.footer)}>
-          <button className={css(styles.densed)}>Borrow</button>
-        </div>
-      </div>
+      <Borrow
+        checkContent={checkContent}
+        address={address}
+        tokens={tokens}
+        handleSelectOpen={handleSelectOpen}
+        selectedToken={selectedToken}
+      />
 
       {/* Repay */}
+      <Repay
+        checkContent={checkContent}
+        address={address}
+        tokens={tokens}
+        handleSelectOpen={handleSelectOpen}
+        selectedToken={selectedToken}
+      />
 
-      <div className={checkContent("repay")}>
-        <div className={css(styles.mintInputWrapper)}>
-          <div className={css(styles.mintTitle)}>
-            <span>Available: 0 {selectedToken?.name || ""}</span>
-            <span className={css(styles.from)}>From</span>
-          </div>
-          <div className={css(styles.mintInnerWrap)}>
-            <input
-              type="text"
-              className={css(styles.input)}
-              placeholder="0.00"
-            />
-            <div className={css(styles.maxBtn)}>Max</div>
-            {selectedToken?.name ? (
-              <div className={css(styles.tokenList)} onClick={handleSelectOpen}>
-                <img src={selectedToken?.image} alt="" height="25" width="25" />
-                <span className={css(styles.tokenName)}>
-                  {selectedToken?.name}
-                </span>
-                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
-                  <path
-                    d="M0.97168 1L6.20532 6L11.439 1"
-                    stroke="#AEAEAE"
-                  ></path>
-                </svg>
-              </div>
-            ) : (
-              <div
-                className={css(styles.tokenDefaultList)}
-                onClick={handleSelectOpen}
-              >
-                <span className={css(styles.tokenName)}>Select Token</span>
-                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
-                  <path
-                    d="M0.97168 1L6.20532 6L11.439 1"
-                    stroke="#AEAEAE"
-                  ></path>
-                </svg>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className={css(styles.subTitle)}>Borrowed Amount: 10 USDT</div>
-        <div className={css(styles.footer)}>
-          <button className={css(styles.densed)}>Repay</button>
-        </div>
-      </div>
       
       <SelectToken
         isVisible={openSelect}

@@ -180,7 +180,7 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
     if (currentAny) {
       if (ibalance > balance) {
         return (
-          <button className={css(styles.densed)} onClick={handleApprove}>
+          <button className={css(styles.densed)}>
             Insufficient {selectedToken?.symbol} balance
           </button>
         );
