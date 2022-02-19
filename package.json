@@ -8,10 +8,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ethersproject/bignumber": "^5.5.0",
     "@ethersproject/providers": "^5.5.0",
     "@reduxjs/toolkit": "^1.6.2",
     "@walletconnect/web3-provider": "^1.6.6",
     "aphrodite": "^2.4.0",
+    "ethers": "^5.5.4",
     "next": "12.0.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",

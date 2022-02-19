@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
+import transactionReducer from "../state/transactions/reducer";
 
 const combinedReducers = combineReducers({
 	// tracks: tracksReducer,
@@ -7,6 +8,7 @@ const combinedReducers = combineReducers({
 	// wallet: walletReducer,
 	// search: searchReducer,
 	// player: playerReducer
+	transactions: transactionReducer,
 });
 
 const store = configureStore({
