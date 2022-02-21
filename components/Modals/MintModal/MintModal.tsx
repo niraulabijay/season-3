@@ -29,22 +29,28 @@ type PoolProps = {
   onClose: () => void;
 };
 
-const MintModal = ({ isVisible, onClose }: PoolProps) => {
+type DetailProps = {
+  onClose: () => void;
+};
+
+const MintModalDetails = ({ onClose }: DetailProps) => {
   const styles = Styles();
   const address = useAddress();
   const chainId = useChainId();
   const tokens = useContractContext();
   const [currentAny, setCurrentAny] = useState<UsableContract | null>(null);
+  const [currentAnyAllowance, setCurrentAnyAllownace] =
+    useState<BigNumber>(Zero);
   const [openSelect, setOpenSelect] = useState(false);
   const [balance, setBalance] = useState(0);
-  const [ibalance, setIbalance] = useState<number | string>(0);
+  const [ibalance, setIbalance] = useState<number | string>();
   const [totalanyLeft, setTotalanyLeft] = useState(0);
   const [totalbanyLeft, setTotalbanyLeft] = useState(0);
   const [buttonStatus, setButtonStatus] = useState({
-    error: "",
     mint: false,
     approve: false,
     disable: false,
+    error: "",
   });
   const transactionAdder = useTransactionAdder();
   const dispatch = useAppDispatch();
@@ -62,21 +68,41 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const handleMaximum = () => {
     setIbalance(balance);
-    checkDisable(balance);
+    checkApproveAndDisable(balance);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIbalance(value);
-    checkDisable(value);
+    checkApproveAndDisable(value);
   };
 
-  const checkDisable = (value: number | string) => {
-    if (value && !isNaN(Number(value)) && value > 0) {
-      setButtonStatus({ ...buttonStatus, disable: false });
-    } else {
-      setButtonStatus({ ...buttonStatus, disable: true });
+  const checkApproveAndDisable = (value: number | string) => {
+    if (currentAny && currentAny.decimal && value && !isNaN(Number(value))) {
+      const anyToApprove = exactToDecimal(value, currentAny.decimal);
+      if (currentAnyAllowance.gte(anyToApprove)) {
+        updateButton(value, true, false);
+      } else {
+        updateButton(value, false, true);
+      }
     }
+  };
+
+  const updateButton = (
+    value: number | string,
+    mint: boolean,
+    approve: boolean
+  ) => {
+    let disable = true;
+    if (value > 0) {
+      disable = false;
+    }
+    setButtonStatus({
+      ...buttonStatus,
+      disable: disable,
+      mint: mint,
+      approve: approve,
+    });
   };
 
   const getBalance = fetchErc20Balance();
@@ -114,9 +140,7 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const getbAnyLeft = async () => {
     const bAnyminterAddress = tokens["bAnyMinter"].address;
-    console.log(bAnyminterAddress)
     try {
-      // console.log(tokens["bAnyMinter"].decimal)
       if (tokens["bAnyToken"].decimal) {
         const banyLeft = await getbAnyLeftBalance(
           tokens["treasuryTba"].contract,
@@ -126,14 +150,14 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
           banyLeft,
           tokens["bAnyToken"].decimal
         );
-        console.log(totalbAnyLeft, 'bany')
-        console.log(banyLeft)
         setTotalbanyLeft(totalbAnyLeft);
       }
     } catch (err) {
       console.log(err);
     }
   };
+
+  console.log(buttonStatus, "btStatus");
 
   const checkTokenAllowance = async (currentToken: UsableContract) => {
     if (currentToken && currentToken.contract && currentToken.decimal) {
@@ -142,31 +166,14 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
         tokens["bAnyMinter"].address,
         address
       );
-      const anyToApprove = exactToDecimal(10000, currentToken.decimal);
-      if (allowance.gt(anyToApprove)) {
-        setButtonStatus({ ...buttonStatus, disable: false, mint: true });
-      } else if (allowance > ibalance) {
-        setButtonStatus({
-          ...buttonStatus,
-          mint: false,
-          approve: true,
-          disable: true,
-        });
-      } else {
-        setButtonStatus({
-          ...buttonStatus,
-          approve: true,
-          mint: false,
-          disable: false,
-        });
-      }
+      setCurrentAnyAllownace(allowance);
     }
   };
 
   useEffect(() => {
     Object.keys(tokens).map((token) => {
       if (selectedToken?.address == tokens[token].address) {
-        setIbalance(0);
+        setIbalance("");
         setCurrentAny(tokens[token]);
         getTotalbalance(tokens[token]);
         getAnyLeft(tokens[token]);
@@ -178,40 +185,52 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   const ButtonDisplay = () => {
     if (currentAny) {
-      if (ibalance > balance) {
-        return (
-          <button className={css(styles.densed)}>
-            Insufficient {selectedToken?.symbol} balance
-          </button>
-        );
-      } else if (ibalance == 0) {
+      if (
+        !ibalance ||
+        ibalance == 0 ||
+        ibalance == "" ||
+        isNaN(Number(ibalance))
+      ) {
         return (
           <button className={css(styles.densed)} disabled>
             Enter Amount
           </button>
         );
       } else {
-        if (buttonStatus.mint && !buttonStatus.disable) {
+        if (ibalance > balance) {
           return (
-            <button className={css(styles.densed)} onClick={handleMint}>
-              Mint BANY
-            </button>
-          );
-        } else if (
-          (buttonStatus.approve && !buttonStatus.disable) ||
-          (buttonStatus.approve && ibalance > 0)
-        ) {
-          return (
-            <button className={css(styles.densed)} onClick={handleApprove}>
-              Approve
+            <button className={css(styles.densed)}>
+              Insufficient {selectedToken?.symbol} balance
             </button>
           );
         } else {
-          return (
-            <button className={css(styles.densed)} disabled>
-              Error
-            </button>
-          );
+          if (buttonStatus.mint) {
+            return (
+              <button
+                className={css(styles.densed)}
+                onClick={handleMint}
+                disabled={buttonStatus.disable}
+              >
+                Mint BANY
+              </button>
+            );
+          } else if (buttonStatus.approve) {
+            return (
+              <button
+                className={css(styles.densed)}
+                onClick={handleApprove}
+                disabled={buttonStatus.disable}
+              >
+                Approve
+              </button>
+            );
+          } else {
+            return (
+              <button className={css(styles.densed)} disabled>
+                Error
+              </button>
+            );
+          }
         }
       }
     } else {
@@ -321,7 +340,6 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
       provider
         .waitForTransaction(hash)
         .then((receipt) => {
-          console.log("Transaction Mined: ", receipt);
           dispatch(
             finalizeTransaction({
               chainId: chainId,
@@ -354,97 +372,90 @@ const MintModal = ({ isVisible, onClose }: PoolProps) => {
 
   return (
     <>
-      <Modal isVisible={isVisible} onClose={onClose}>
-        <div className={css(styles.modalHeader)}>
-          <div className={css(styles.modalTitle)}>Mint Modal</div>
-          <div className={css(styles.modalClose)}>
-            {/* <div className={css(styles.modalPercent)}>TBA: 2</div> */}
-            <span className={css(styles.close)} onClick={onClose}>
-              &times;
+      <div className={css(styles.modalHeader)}>
+        <div className={css(styles.modalTitle)}>Mint Modal</div>
+        <div className={css(styles.modalClose)}>
+          {/* <div className={css(styles.modalPercent)}>TBA: 2</div> */}
+          <span className={css(styles.close)} onClick={onClose}>
+            &times;
+          </span>
+        </div>
+      </div>
+      <div>
+        <div className={css(styles.mintInputWrapper)}>
+          <div className={css(styles.mintTitle)}>
+            <span>
+              Available: {balance} {selectedToken?.symbol || ""}
             </span>
+            <span className={css(styles.from)}>From</span>
+          </div>
+          <div className={css(styles.mintInnerWrap)}>
+            <input
+              type="text"
+              className={css(styles.input)}
+              placeholder="0.00"
+              value={ibalance}
+              onChange={handleChange}
+            />
+            <div className={css(styles.maxBtn)} onClick={handleMaximum}>
+              Max
+            </div>
+            {currentAny?.symbol ? (
+              <div className={css(styles.tokenList)} onClick={handleSelectOpen}>
+                <img src={currentAny?.logo} alt="" height="25" width="25" />
+                <span className={css(styles.tokenName)}>
+                  {currentAny?.symbol}
+                </span>
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
+                  <path
+                    d="M0.97168 1L6.20532 6L11.439 1"
+                    stroke="#AEAEAE"
+                  ></path>
+                </svg>
+              </div>
+            ) : (
+              <div
+                className={css(styles.tokenDefaultList)}
+                onClick={handleSelectOpen}
+              >
+                <span className={css(styles.tokenName)}>Select Token</span>
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="#4ac7d4">
+                  <path
+                    d="M0.97168 1L6.20532 6L11.439 1"
+                    stroke="#AEAEAE"
+                  ></path>
+                </svg>
+              </div>
+            )}
           </div>
         </div>
         <div>
-          <div className={css(styles.mintInputWrapper)}>
-            <div className={css(styles.mintTitle)}>
-              <span>
-                Available: {balance} {selectedToken?.symbol || ""}
-              </span>
-              <span className={css(styles.from)}>From</span>
-            </div>
-            <div className={css(styles.mintInnerWrap)}>
-              <input
-                type="text"
-                className={css(styles.input)}
-                placeholder="0.00"
-                value={ibalance}
-                onChange={handleChange}
-              />
-              <div className={css(styles.maxBtn)} onClick={handleMaximum}>
-                Max
-              </div>
-              {currentAny?.symbol ? (
-                <div
-                  className={css(styles.tokenList)}
-                  onClick={handleSelectOpen}
-                >
-                  <img src={currentAny?.logo} alt="" height="25" width="25" />
-                  <span className={css(styles.tokenName)}>
-                    {currentAny?.symbol}
-                  </span>
-                  <svg
-                    width="16"
-                    height="10"
-                    viewBox="0 0 16 10"
-                    fill="#4ac7d4"
-                  >
-                    <path
-                      d="M0.97168 1L6.20532 6L11.439 1"
-                      stroke="#AEAEAE"
-                    ></path>
-                  </svg>
-                </div>
-              ) : (
-                <div
-                  className={css(styles.tokenDefaultList)}
-                  onClick={handleSelectOpen}
-                >
-                  <span className={css(styles.tokenName)}>Select Token</span>
-                  <svg
-                    width="16"
-                    height="10"
-                    viewBox="0 0 16 10"
-                    fill="#4ac7d4"
-                  >
-                    <path
-                      d="M0.97168 1L6.20532 6L11.439 1"
-                      stroke="#AEAEAE"
-                    ></path>
-                  </svg>
-                </div>
-              )}
-            </div>
+          <div className={css(styles.subTitle)}>
+            BANY Left to Mint: <strong>{totalbanyLeft}</strong>
           </div>
-          <div>
-            <div className={css(styles.subTitle)}>
-              BANY Left to Mint: <strong>{totalbanyLeft}</strong>
-            </div>
-            <div className={css(styles.subTitle)}>
-              Max {selectedToken?.symbol}: <strong>{totalanyLeft}</strong>
-            </div>
-          </div>
-
-          <div className={css(styles.footer)}>
-            <ButtonDisplay />
+          <div className={css(styles.subTitle)}>
+            Max {selectedToken?.symbol}: <strong>{totalanyLeft}</strong>
           </div>
         </div>
-        <SelectToken
-          isVisible={openSelect}
-          onClose={handleSelectClose}
-          setSelectedToken={setSelectedToken}
-        />
-      </Modal>
+
+        <div className={css(styles.footer)}>
+          <ButtonDisplay />
+        </div>
+      </div>
+      <SelectToken
+        isVisible={openSelect}
+        onClose={handleSelectClose}
+        setSelectedToken={setSelectedToken}
+      />
     </>
+  );
+};
+
+const MintModal = ({ isVisible, onClose }: PoolProps) => {
+  return (
+    <Modal isVisible={isVisible} onClose={onClose}>
+      <MintModalDetails onClose={onClose} />
+    </Modal>
   );
 };
 

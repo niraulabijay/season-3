@@ -51,7 +51,6 @@ const Borrow = ({
   const submitBorrowResponse = borrowAny();
   const getBorrowedAny = borrowedAny();
 
-
   const getBorrowableAny = async () => {
     const balance = await getBorrowBalance(
       tokens["treasuryTba"].contract,
@@ -68,18 +67,23 @@ const Borrow = ({
     }
   };
 
-  const checkBorrowedAny = async() => {
-    const borrowedAnyAmount = await getBorrowedAny(tokens["treasuryTba"].contract, address);
+  const checkBorrowedAny = async () => {
+    const borrowedAnyAmount = await getBorrowedAny(
+      tokens["treasuryTba"].contract,
+      address
+    );
     let borrowBalance;
-    if(tokens["treasuryTba"]){
-        console.log(borrowedAnyAmount)
-        const borrowBalance = decimalToExact(borrowedAnyAmount, 1);
-        setBorrowedAmount(borrowBalance)
-    }else{
-        borrowBalance = 0;
-        setBorrowedAmount(borrowBalance)
+    if (tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
+      const borrowBalance = decimalToExact(
+        borrowedAnyAmount,
+        tokens["bAnyToken"].decimal
+      );
+      setBorrowedAmount(borrowBalance);
+    } else {
+      borrowBalance = 0;
+      setBorrowedAmount(borrowBalance);
     }
-}
+  };
 
   useEffect(() => {
     Object.keys(tokens).map((token) => {
@@ -106,54 +110,54 @@ const Borrow = ({
 
   const getBorrowResponse = async (contract: Contract | null) => {
     if (ibalance && currentAny && currentAny.decimal) {
-        const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
-        try {
-          const res = await submitBorrowResponse(
-            contract,
-            address,
-            currentAny.address,
-            actualAmount
-          );
-          transactionAdder(res, {
-            summary: "Mint BAny",
+      const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
+      try {
+        const res = await submitBorrowResponse(
+          contract,
+          address,
+          currentAny.address,
+          actualAmount
+        );
+        transactionAdder(res, {
+          summary: "Mint BAny",
+        });
+        const { hash } = res;
+        console.log(hash, "newhash");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        provider
+          .waitForTransaction(hash)
+          .then((receipt) => {
+            dispatch(
+              finalizeTransaction({
+                chainId: chainId,
+                hash: hash,
+                receipt: {
+                  blockHash: receipt.blockHash,
+                  blockNumber: receipt.blockNumber,
+                  contractAddress: receipt.contractAddress,
+                  from: receipt.from,
+                  status: receipt.status,
+                  to: receipt.to,
+                  transactionHash: receipt.transactionHash,
+                  transactionIndex: receipt.transactionIndex,
+                },
+              })
+            );
+            // check Any Balance here
+          })
+          .catch((err) => {
+            dispatch(
+              finalizeTransaction({
+                chainId,
+                hash,
+                receipt: "failed",
+              })
+            );
           });
-          const { hash } = res;
-          console.log(hash, 'newhash')
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          provider
-            .waitForTransaction(hash)
-            .then((receipt) => {
-              dispatch(
-                finalizeTransaction({
-                  chainId: chainId,
-                  hash: hash,
-                  receipt: {
-                    blockHash: receipt.blockHash,
-                    blockNumber: receipt.blockNumber,
-                    contractAddress: receipt.contractAddress,
-                    from: receipt.from,
-                    status: receipt.status,
-                    to: receipt.to,
-                    transactionHash: receipt.transactionHash,
-                    transactionIndex: receipt.transactionIndex,
-                  },
-                })
-              );
-              // check Any Balance here
-            })
-            .catch((err) => {
-              dispatch(
-                finalizeTransaction({
-                  chainId,
-                  hash,
-                  receipt: "failed",
-                })
-              );
-            });
-        } catch (err) {
-          console.log(err, "Mint error");
-        }
+      } catch (err) {
+        console.log(err, "Mint error");
       }
+    }
   };
 
   const handleMaximum = () => {
@@ -258,7 +262,9 @@ const Borrow = ({
           )}
         </div>
       </div>
-      <div className={css(styles.subTitle)}>Borrowed Amount: {borrowedAmount} amount</div>
+      <div className={css(styles.subTitle)}>
+        Borrowed Amount: {borrowedAmount} amount
+      </div>
       <div className={css(styles.footer)}>
         <ButtonDisplay />
       </div>

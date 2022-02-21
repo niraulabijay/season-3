@@ -7,6 +7,7 @@ type ModalProps = {
   isVisible: boolean;
   onClose: () => void;
   width?: string;
+  allowVisible?: boolean;
 };
 
 const Modal = ({
@@ -14,6 +15,7 @@ const Modal = ({
   isVisible,
   onClose,
   width = "500px",
+  allowVisible,
 }: ModalProps) => {
   const { connected } = useWeb3Context();
   const styles = Styles(width);
@@ -24,8 +26,10 @@ const Modal = ({
       if (
         insideModal.current &&
         !insideModal.current.contains(e.target as Node)
-      )
+      ) {
+        console.log(e.target);
         onClose();
+      }
     };
     if (isVisible) {
       document.addEventListener("click", handleEvent);
@@ -40,7 +44,11 @@ const Modal = ({
       <div>
         <div ref={modal} className={css(styles.modal)}>
           <div ref={insideModal} className={css(styles.modalContent)}>
-            {!connected ? <span>Wallet not connected</span> : <>{children}</>}
+            {!connected ? (
+              <span>Wallet not connected</span>
+            ) : isVisible || allowVisible ? (
+              <>{children}</>
+            ) : null}
           </div>
         </div>
       </div>
