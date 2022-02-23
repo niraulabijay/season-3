@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 import { Contract } from "ethers";
-// import { evaluateTransaction } from "./evaluateTransaction";
 import { submitTransaction } from "./submitTransaction";
 import { BigNumber } from "@ethersproject/bignumber";
 import { evaluateTransaction } from "./evaluateTransaction";

@@ -6,11 +6,9 @@ import factory from "../public/factory.png";
 import animals from "../public/animals.png";
 import pool from "../public/pool.png";
 import pirate from "../public/pirate.png";
-import FactoryModal from "../components/Modals/FactoryModal";
 import { useState } from "react";
 import AnimalsModal from "../components/Modals/AnimalsModal";
 import PirateModal from "../components/Modals/PirateModal";
-import PoolModal from "../components/Modals/PoolModal";
 import TreasuryModal from "../components/Modals/TreasuryModal/TreasuryModal";
 import MintModal from "../components/Modals/MintModal/MintModal";
 

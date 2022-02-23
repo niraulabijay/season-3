@@ -3,11 +3,6 @@ import { combineReducers } from "redux";
 import transactionReducer from "../state/transactions/reducer";
 
 const combinedReducers = combineReducers({
-	// tracks: tracksReducer,
-	// router: routerReducer,
-	// wallet: walletReducer,
-	// search: searchReducer,
-	// player: playerReducer
 	transactions: transactionReducer,
 });
 

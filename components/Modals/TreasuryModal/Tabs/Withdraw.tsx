@@ -2,21 +2,12 @@ import React, { useState, useEffect } from "react";
 import { css } from "aphrodite";
 import { Styles } from "../Styles";
 import { Contract, ethers } from "ethers";
-import { MaxUint256, Zero } from "@ethersproject/constants";
-import { BigNumber } from "@ethersproject/bignumber";
-import {
-  approveErc20Spend,
-  checkErc20Allowance,
-  fetchErc20Balance,
-} from "../../../../helpers/methods";
 import { decimalToExact, exactToDecimal } from "../../../../helpers/conversion";
 import { finalizeTransaction } from "../../../../state/transactions/actions";
 import { useTransactionAdder } from "../../../../state/transactions/hooks";
-import { useAppDispatch } from "../../../../store/hooks";
 import { useChainId } from "../../../../hooks/web3/web3Context";
 import { UsableContract } from "../../../../hooks/contract/contractContext";
 import {
-  depositBany,
   depositedBany,
   maxBanyToUnlock,
   withdrawBany,

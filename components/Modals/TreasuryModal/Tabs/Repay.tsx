@@ -7,7 +7,6 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { decimalToExact, exactToDecimal } from "../../../../helpers/conversion";
 import { finalizeTransaction } from "../../../../state/transactions/actions";
 import { useTransactionAdder } from "../../../../state/transactions/hooks";
-import { useAppDispatch } from "../../../../store/hooks";
 import { useChainId } from "../../../../hooks/web3/web3Context";
 import { UsableContract } from "../../../../hooks/contract/contractContext";
 import { TokenDefinition } from "../../../../helpers/networks";

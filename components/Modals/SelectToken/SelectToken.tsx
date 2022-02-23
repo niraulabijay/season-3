@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Modal from "../Modal";
 import { css } from "aphrodite";
 import { Styles } from "./Style";

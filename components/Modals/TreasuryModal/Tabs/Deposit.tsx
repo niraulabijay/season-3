@@ -221,26 +221,6 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
         address
       );
       setCurrentbAnyAllownace(allowance);
-      // console.log(currentToken)
-      // console.log(allowance, 'allow')
-      // const bAnyToApprove = exactToDecimal(10000, currentToken.decimal);
-      // if (allowance.gt(bAnyToApprove)) {
-      //   setButtonStatus({ ...buttonStatus, disable: false, mint: true });
-      // } else if (allowance > ibalance) {
-      //   setButtonStatus({
-      //     ...buttonStatus,
-      //     mint: false,
-      //     approve: true,
-      //     disable: true,
-      //   });
-      // } else {
-      //   setButtonStatus({
-      //     ...buttonStatus,
-      //     approve: true,
-      //     mint: false,
-      //     disable: false,
-      //   });
-      // }
     }
   };
 

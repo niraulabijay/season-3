@@ -1,5 +1,5 @@
 import { StyleSheet, css } from "aphrodite";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useWeb3Context } from "../../hooks";
 
 type ModalProps = {

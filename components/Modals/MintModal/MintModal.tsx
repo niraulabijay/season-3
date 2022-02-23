@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../Modal";
-import { StyleSheet, css } from "aphrodite";
-import { useAddress, useContractContext, useWeb3Context } from "../../../hooks";
+import { css } from "aphrodite";
+import { useAddress, useContractContext } from "../../../hooks";
 import { Styles } from "./Style";
 import { Contract, ethers } from "ethers";
 import SelectToken from "../SelectToken/SelectToken";
@@ -17,7 +17,6 @@ import {
 import { MaxUint256, Zero } from "@ethersproject/constants";
 import { UsableContract } from "../../../hooks/contract/contractContext";
 import { BigNumber } from "@ethersproject/bignumber";
-import Web3 from "web3";
 import { useTransactionAdder } from "../../../state/transactions/hooks";
 import { finalizeTransaction } from "../../../state/transactions/actions";
 import { useAppDispatch } from "../../../store/hooks";

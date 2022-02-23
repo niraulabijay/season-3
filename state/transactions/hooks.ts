@@ -1,14 +1,11 @@
 import {
-  TransactionResponse,
-  TransactionReceipt,
+  TransactionResponse
 } from '@ethersproject/providers';
 import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-// import { useActiveWeb3React } from 'hooks';
-// import { useAddPopup } from 'state/application/hooks';
 import { AppDispatch, RootState } from '../../store/store';
-import { useAddress, useWeb3Context } from '../../hooks';
+import { useAddress } from '../../hooks';
 import { useChainId } from '../../hooks/web3/web3Context';
 import { addTransaction } from './actions';
 import { TransactionDetails } from './reducer';
@@ -60,68 +57,6 @@ export function useTransactionAdder(): (
     [dispatch, chainId, account],
   );
 }
-
-// export function useTransactionFinalizer(): (
-//   receipt: TransactionReceipt,
-//   customData?: {
-//     summary?: string;
-//     approval?: { tokenAddress: string; spender: string };
-//     claim?: { recipient: string };
-//   },
-// ) => void {
-//   const account = useAddress();
-//   const chainId = useChainId();
-//   const dispatch = useDispatch<AppDispatch>();
-//   const addPopup = useAddPopup();
-
-//   return useCallback(
-//     (
-//       receipt: TransactionReceipt,
-//       {
-//         summary,
-//       }: {
-//         summary?: string;
-//         claim?: { recipient: string };
-//         approval?: { tokenAddress: string; spender: string };
-//       } = {},
-//     ) => {
-//       if (!account) return;
-//       if (!chainId) return;
-
-//       const { transactionHash } = receipt;
-//       if (!transactionHash) {
-//         throw Error('No transaction hash found.');
-//       }
-//       dispatch(
-//         finalizeTransaction({
-//           chainId,
-//           hash: transactionHash,
-//           receipt: {
-//             blockHash: receipt.blockHash,
-//             blockNumber: receipt.blockNumber,
-//             contractAddress: receipt.contractAddress,
-//             from: receipt.from,
-//             status: receipt.status,
-//             to: receipt.to,
-//             transactionHash: receipt.transactionHash,
-//             transactionIndex: receipt.transactionIndex,
-//           },
-//         }),
-//       );
-//       // addPopup(
-//       //   {
-//       //     txn: {
-//       //       hash: transactionHash,
-//       //       success: receipt.status === 1,
-//       //       summary: summary,
-//       //     },
-//       //   },
-//       //   transactionHash,
-//       // );
-//     },
-//     [dispatch, chainId, account, addPopup],
-//   );
-// }
 
 // returns all the transactions for the current chain
 export function useAllTransactions(): { [txHash: string]: TransactionDetails } {

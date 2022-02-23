@@ -4,11 +4,6 @@ import { evaluateTransaction } from "./evaluateTransaction";
 import { submitTransaction } from "./submitTransaction";
 import { BigNumber } from "@ethersproject/bignumber";
 
-// export const fetchErc20Balance = async(contract: Contract, address: string) => {
-//   const balance = await contract?.methods?.balanceOf(address).call();
-//   return balance;
-// }
-
 export const fetchErc20Balance = (): ((
   contract: Contract | null,
   address: string

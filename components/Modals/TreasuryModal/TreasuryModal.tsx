@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Modal from "../Modal";
 import { css } from "aphrodite";
-import { useAddress, useContractContext, useWeb3Context } from "../../../hooks";
+import { useAddress, useContractContext } from "../../../hooks";
 import { Styles } from "./Styles";
 import SelectToken from "../SelectToken/SelectToken";
 import Deposit from "./Tabs/Deposit";

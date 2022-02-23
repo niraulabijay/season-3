@@ -22,25 +22,6 @@ const Transaction: React.FC<TransactionProps> = ({ hash }) => {
   if (!chainId) return null;
 
   return <>{pending ? "pending" : success ? "success" : ""}</>;
-  // <Box className={classes.transactionState}>
-  //   <a
-  //     className={classes.transactionStatusText}
-  //     href={getEtherscanLink(chainId, hash, 'transaction')}
-  //     target='_blank'
-  //     rel='noreferrer'
-  //   >
-  //     {summary ?? hash} ↗
-  //   </a>
-  //   <Box className={classes.iconWrapper}>
-  //     {pending ? (
-  //       <CircularProgress size={16} />
-  //     ) : success ? (
-  //       <CheckCircle size='16' />
-  //     ) : (
-  //       <Triangle size='16' />
-  //     )}
-  //   </Box>
-  // </Box>
 };
 
 export default Transaction;
