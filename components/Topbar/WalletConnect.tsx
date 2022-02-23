@@ -99,10 +99,16 @@ const WalletConnect = () => {
 
   return (
     <div className={css(styles.container)}>
-      <button className={css(styles.balance)}>{banyTotalBalance} BANY</button>
-      <button className={css(styles.balance)}>{tba} TBA</button>
       {isConnected && buttonText !== "Wrong Network" && (
-        <button className={css(styles.balance)}>{islaTotalBalance} ISLA</button>
+        <>
+          <button className={css(styles.balance)}>
+            {banyTotalBalance} BANY
+          </button>
+          <button className={css(styles.balance)}>{tba} TBA</button>
+          <button className={css(styles.balance)}>
+            {islaTotalBalance} ISLA
+          </button>
+        </>
       )}
 
       <button className={css(styles.connectButton)} onClick={clickFunc}>

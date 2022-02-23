@@ -4,7 +4,11 @@ import { Styles } from "../Styles";
 import { Contract, ethers } from "ethers";
 import { MaxUint256, Zero } from "@ethersproject/constants";
 import { BigNumber } from "@ethersproject/bignumber";
-import { approveErc20Spend, checkErc20Allowance, fetchErc20Balance } from "../../../../helpers/methods";
+import {
+  approveErc20Spend,
+  checkErc20Allowance,
+  fetchErc20Balance,
+} from "../../../../helpers/methods";
 import { decimalToExact, exactToDecimal } from "../../../../helpers/conversion";
 import { finalizeTransaction } from "../../../../state/transactions/actions";
 import { useTransactionAdder } from "../../../../state/transactions/hooks";
@@ -14,12 +18,12 @@ import { UsableContract } from "../../../../hooks/contract/contractContext";
 import { depositBany } from "../../../../helpers/treasuryMethods";
 
 type DepositProps = {
-  checkContent: (name:string)=>any;
+  checkContent: (name: string) => any;
   address: string;
-  tokens: {[x: string]: UsableContract};
+  tokens: { [x: string]: UsableContract };
 };
 
-const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
+const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   const styles = Styles();
   const [banyTotalBalance, setBanyTotalBalance] = useState(0);
   const [ibalance, setIbalance] = useState<number | string>(0);
@@ -29,7 +33,9 @@ const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
     approve: false,
     disable: false,
   });
-  console.log(tokens)
+  const [currentbAnyAllowance, setCurrentbAnyAllownace] =
+    useState<BigNumber>(Zero);
+  console.log(tokens);
   const transactionAdder = useTransactionAdder();
   const dispatch = useAppDispatch();
   const chainId = useChainId();
@@ -55,83 +61,109 @@ const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
   const handleIbalance = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIbalance(value);
-    checkDisable(value);
+    checkApproveAndDisable(value);
   };
 
   const handleMaximum = () => {
-      setIbalance(banyTotalBalance);
-      checkDisable(ibalance);
-  }
+    setIbalance(banyTotalBalance);
+    checkApproveAndDisable(banyTotalBalance);
+  };
 
-  const checkDisable = (value: number | string) => {
-    if (value && !isNaN(Number(value)) && value > 0) {
-        setButtonStatus({ ...buttonStatus, disable: false });
+  const checkApproveAndDisable = (value: number | string) => {
+    if (
+      tokens["bAnyToken"] &&
+      tokens["bAnyToken"].decimal &&
+      value &&
+      !isNaN(Number(value))
+    ) {
+      const anyToApprove = exactToDecimal(value, tokens["bAnyToken"].decimal);
+      if (currentbAnyAllowance.gte(anyToApprove)) {
+        updateButton(value, true, false);
       } else {
-        setButtonStatus({ ...buttonStatus, disable: true });
+        updateButton(value, false, true);
       }
-  }
+    }
+  };
+
+  const updateButton = (
+    value: number | string,
+    mint: boolean,
+    approve: boolean
+  ) => {
+    let disable = true;
+    if (value > 0) {
+      disable = false;
+    }
+    setButtonStatus({
+      ...buttonStatus,
+      disable: disable,
+      mint: mint,
+      approve: approve,
+    });
+  };
 
   const checkApproveResponse = approveErc20Spend();
   const checkDepositResponse = depositBany();
 
-
   const getApproveResponse = async (contract: Contract | null) => {
     if (tokens && tokens["bAnyToken"].decimal) {
-        const actualAmount = MaxUint256;
-        // const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
-        const res = await checkApproveResponse(
-          contract,
-          address,
-          tokens["treasuryTba"].address,
-          actualAmount
-        );
-        transactionAdder(res, {
-          summary: "Approve " + tokens["bAnyToken"].symbol,
-          approval: {
-            tokenAddress: tokens["treasuryTba"].address,
-            spender: tokens["treasuryTba"].address,
-          },
+      const actualAmount = MaxUint256;
+      // const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
+      const res = await checkApproveResponse(
+        contract,
+        address,
+        tokens["treasuryTba"].address,
+        actualAmount
+      );
+      transactionAdder(res, {
+        summary: "Approve " + tokens["bAnyToken"].symbol,
+        approval: {
+          tokenAddress: tokens["treasuryTba"].address,
+          spender: tokens["treasuryTba"].address,
+        },
+      });
+      const { hash } = res;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      provider
+        .waitForTransaction(hash)
+        .then((receipt) => {
+          console.log("Transaction Mined: ", receipt);
+          dispatch(
+            finalizeTransaction({
+              chainId: chainId,
+              hash: hash,
+              receipt: {
+                blockHash: receipt.blockHash,
+                blockNumber: receipt.blockNumber,
+                contractAddress: receipt.contractAddress,
+                from: receipt.from,
+                status: receipt.status,
+                to: receipt.to,
+                transactionHash: receipt.transactionHash,
+                transactionIndex: receipt.transactionIndex,
+              },
+            })
+          );
+          checkTokenAllowance(tokens["bAnyToken"]);
+        })
+        .catch((err) => {
+          dispatch(
+            finalizeTransaction({
+              chainId,
+              hash,
+              receipt: "failed",
+            })
+          );
         });
-        const { hash } = res;
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        provider
-          .waitForTransaction(hash)
-          .then((receipt) => {
-            console.log("Transaction Mined: ", receipt);
-            dispatch(
-              finalizeTransaction({
-                chainId: chainId,
-                hash: hash,
-                receipt: {
-                  blockHash: receipt.blockHash,
-                  blockNumber: receipt.blockNumber,
-                  contractAddress: receipt.contractAddress,
-                  from: receipt.from,
-                  status: receipt.status,
-                  to: receipt.to,
-                  transactionHash: receipt.transactionHash,
-                  transactionIndex: receipt.transactionIndex,
-                },
-              })
-            );
-            checkTokenAllowance(tokens["bAnyToken"]);
-          })
-          .catch((err) => {
-            dispatch(
-              finalizeTransaction({
-                chainId,
-                hash,
-                receipt: "failed",
-              })
-            );
-          });
-      }
-
-  }
+    }
+  };
 
   const getDepositResponse = async (contract: Contract | null) => {
     if (ibalance && tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
-      const actualAmount = exactToDecimal(ibalance, tokens["bAnyToken"].decimal);
+      const actualAmount = exactToDecimal(
+        ibalance,
+        tokens["bAnyToken"].decimal
+      );
       try {
         const res = await checkDepositResponse(
           contract,
@@ -180,47 +212,52 @@ const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
     }
   };
 
-
-
   const checkTokenAllowance = async (currentToken: UsableContract) => {
-    
     if (currentToken && currentToken.contract && currentToken.decimal) {
-      console.log(tokens["treasuryTba"].address,'tba addr')
-        const allowance = await checkAllowance(
-          currentToken.contract,
-          tokens["treasuryTba"].address,
-          address
-        );
-        console.log(currentToken)
-        console.log(allowance, 'allow')
-        const bAnyToApprove = exactToDecimal(10000, currentToken.decimal);
-        if (allowance.gt(bAnyToApprove)) {
-          setButtonStatus({ ...buttonStatus, disable: false, mint: true });
-        } else if (allowance > ibalance) {
-          setButtonStatus({
-            ...buttonStatus,
-            mint: false,
-            approve: true,
-            disable: true,
-          });
-        } else {
-          setButtonStatus({
-            ...buttonStatus,
-            approve: true,
-            mint: false,
-            disable: false,
-          });
-        }
-      }
-  }
+      console.log(tokens["treasuryTba"].address, "tba addr");
+      const allowance = await checkAllowance(
+        currentToken.contract,
+        tokens["treasuryTba"].address,
+        address
+      );
+      setCurrentbAnyAllownace(allowance);
+      // console.log(currentToken)
+      // console.log(allowance, 'allow')
+      // const bAnyToApprove = exactToDecimal(10000, currentToken.decimal);
+      // if (allowance.gt(bAnyToApprove)) {
+      //   setButtonStatus({ ...buttonStatus, disable: false, mint: true });
+      // } else if (allowance > ibalance) {
+      //   setButtonStatus({
+      //     ...buttonStatus,
+      //     mint: false,
+      //     approve: true,
+      //     disable: true,
+      //   });
+      // } else {
+      //   setButtonStatus({
+      //     ...buttonStatus,
+      //     approve: true,
+      //     mint: false,
+      //     disable: false,
+      //   });
+      // }
+    }
+  };
 
   const handleApprove = () => {
-    if (tokens && tokens["treasuryTba"].signer && tokens["treasuryTba"].contract) {
-        const signedContract = tokens["treasuryTba"].contract.connect(tokens["treasuryTba"].signer);
-        getApproveResponse(signedContract);
-      } else {
-        alert("Initializing...Please wait");
-      }  }
+    if (
+      tokens &&
+      tokens["treasuryTba"].signer &&
+      tokens["treasuryTba"].contract
+    ) {
+      const signedContract = tokens["treasuryTba"].contract.connect(
+        tokens["treasuryTba"].signer
+      );
+      getApproveResponse(signedContract);
+    } else {
+      alert("Initializing...Please wait");
+    }
+  };
 
   const handleDeposit = () => {
     if (
@@ -233,51 +270,53 @@ const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
       );
       getDepositResponse(signedContract);
     }
-  }
+  };
 
   useEffect(() => {
     getTotalBalance();
-    checkTokenAllowance(tokens["bAnyToken"])
+    checkTokenAllowance(tokens["bAnyToken"]);
   }, [address, tokens]);
 
   const ButtonDisplay = () => {
-    if (ibalance > banyTotalBalance) {
+    if (
+      !ibalance ||
+      ibalance == 0 ||
+      ibalance == "" ||
+      isNaN(Number(ibalance))
+    ) {
+      return (
+        <button className={css(styles.densed)} disabled>
+          Enter Amount
+        </button>
+      );
+    } else if (ibalance > banyTotalBalance) {
+      return (
+        <button className={css(styles.densed)} onClick={handleApprove}>
+          Insufficient Bany Balance
+        </button>
+      );
+    } else {
+      if (buttonStatus.mint) {
         return (
-          <button className={css(styles.densed)} onClick={handleApprove}>
-            Insufficient Bany Balance
+          <button className={css(styles.densed)} onClick={handleDeposit}>
+            Deposit
           </button>
         );
-      } else if (ibalance == 0) {
+      } else if (buttonStatus.approve) {
         return (
-          <button className={css(styles.densed)} disabled>
-            Enter Amount
+          <button className={css(styles.densed)} onClick={handleApprove}>
+            Approve
           </button>
         );
       } else {
-        if (buttonStatus.mint && !buttonStatus.disable) {
-          return (
-            <button className={css(styles.densed)} onClick={handleDeposit}>
-              Deposit
-            </button>
-          );
-        } else if (
-          (buttonStatus.approve && !buttonStatus.disable) ||
-          (buttonStatus.approve && ibalance > 0)
-        ) {
-          return (
-            <button className={css(styles.densed)} onClick={handleApprove}>
-              Approve
-            </button>
-          );
-        } else {
-          return (
-            <button className={css(styles.densed)} disabled>
-              Error
-            </button>
-          );
-        }
+        return (
+          <button className={css(styles.densed)} disabled>
+            Error
+          </button>
+        );
       }
-  }
+    }
+  };
   return (
     <div className={checkContent("deposit")}>
       <div className={css(styles.title)}>
@@ -288,10 +327,12 @@ const Deposit = ({ checkContent, address, tokens }:DepositProps) => {
           type="text"
           className={css(styles.input)}
           placeholder="0.00"
-          value = {ibalance}
+          value={ibalance}
           onChange={handleIbalance}
         />
-        <div className={css(styles.maxFullBtn)} onClick={handleMaximum}>Max</div>
+        <div className={css(styles.maxFullBtn)} onClick={handleMaximum}>
+          Max
+        </div>
       </div>
       <div className={css(styles.footer)}>
         {/* <button className={css(styles.densed)}>Deposit</button> */}

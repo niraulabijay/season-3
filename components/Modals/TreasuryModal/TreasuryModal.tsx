@@ -26,6 +26,7 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
   const handleSelectOpen = () => {
     setOpenSelect(true);
   };
+  console.log(isVisible, "treasury");
 
   const handleSelectClose = () => {
     setOpenSelect(false);
@@ -86,33 +87,53 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
       </ul>
 
       {/* Deposit */}
-
-      <Deposit checkContent={checkContent} address={address} tokens={tokens} />
+      <>
+        {active == "deposit" && (
+          <Deposit
+            checkContent={checkContent}
+            address={address}
+            tokens={tokens}
+          />
+        )}
+      </>
 
       {/* Withdraw */}
-
-      <Withdraw checkContent={checkContent} address={address} tokens={tokens} />
+      <>
+        {active == "withdraw" && (
+          <Withdraw
+            checkContent={checkContent}
+            address={address}
+            tokens={tokens}
+          />
+        )}
+      </>
 
       {/* Borrow */}
-
-      <Borrow
-        checkContent={checkContent}
-        address={address}
-        tokens={tokens}
-        handleSelectOpen={handleSelectOpen}
-        selectedToken={selectedToken}
-      />
+      <>
+        {active == "borrow" && (
+          <Borrow
+            checkContent={checkContent}
+            address={address}
+            tokens={tokens}
+            handleSelectOpen={handleSelectOpen}
+            selectedToken={selectedToken}
+          />
+        )}
+      </>
 
       {/* Repay */}
-      <Repay
-        checkContent={checkContent}
-        address={address}
-        tokens={tokens}
-        handleSelectOpen={handleSelectOpen}
-        selectedToken={selectedToken}
-      />
+      <>
+        {active == "repay" && (
+          <Repay
+            checkContent={checkContent}
+            address={address}
+            tokens={tokens}
+            handleSelectOpen={handleSelectOpen}
+            selectedToken={selectedToken}
+          />
+        )}
+      </>
 
-      
       <SelectToken
         isVisible={openSelect}
         onClose={handleSelectClose}

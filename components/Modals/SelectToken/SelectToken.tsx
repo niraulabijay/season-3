@@ -16,7 +16,7 @@ const SelectToken = ({ isVisible, onClose, setSelectedToken }: PoolProps) => {
     onClose();
   };
   return (
-    <Modal isVisible={isVisible} onClose={onClose}>
+    <Modal isVisible={isVisible} onClose={onClose} allowVisible={true}>
       <div className={css(styles.modalHeader)}>
         <div className={css(styles.modalTitle)}>Select a token</div>
         <div className={css(styles.modalClose)}>
