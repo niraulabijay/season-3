@@ -12,7 +12,7 @@ export const islaGaugeNetwork:TokenDefinition = {
   name: "IslaGauge",
   address : "0x2DE8a306732A5a8E0FbF1b2B8AA32FC9Bc958c2e",
   symbol: "ISLAG",
-  decimals: 10,
+  decimals: 0,
   chainId: 137,
   logoURI: "",
 }
@@ -47,7 +47,6 @@ export const daiNetwork:TokenDefinition = {
 export const bAnyMinterNetwork:TokenDefinition = {
   name: "BANY Minter",
   address: "0x9CcA315d4528eCb13E608baA0DADFefae0DC9237", //new
-  // address: "0x1EEa918305a8C241fF1e9EE1F4694d5150bF0177", //old
   symbol: "BANY Minter",
   decimals: 0,
   chainId: 137,
@@ -67,6 +66,15 @@ export const bAnyNetwork: TokenDefinition = {
   name:"Backed Any",
   address: "0xD51a5153f21D035CfBEBf640666f9A79d4d2BaF5",
   symbol:"BANY",
+  decimals: 18,
+  chainId:137,
+  logoURI:"",
+}
+
+export const islaNetwork: TokenDefinition = {
+  name:"Defiville Island Token",
+  address: "0xFE6A2342f7C5D234E8496dF12c468Be17e0c181F",
+  symbol:"ISLA",
   decimals: 18,
   chainId:137,
   logoURI:"",

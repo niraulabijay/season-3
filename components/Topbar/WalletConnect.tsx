@@ -28,17 +28,17 @@ const WalletConnect = () => {
 
   const getTotalBalance = async () => {
     const banyBalance = await getBalance(tokens["bAnyToken"].contract, address);
-    const islaBalance = await getBalance(tokens["islaGauge"].contract, address);
+    const islaBalance = await getBalance(tokens["islaToken"].contract, address);
     let userBanyBalance;
     let userIslaBalance;
-    if (tokens && tokens["bAnyToken"].decimal && tokens["islaGauge"].decimal) {
+    if (tokens && tokens["bAnyToken"].decimal && tokens["islaToken"].decimal) {
       const userBanyBalance = decimalToExact(
         banyBalance,
         tokens["bAnyToken"].decimal
       );
       const userIslaBalance = decimalToExact(
         islaBalance,
-        tokens["islaGauge"].decimal
+        tokens["islaToken"].decimal
       );
       setIslaTotalBalance(userIslaBalance);
       setBanyTotalBalance(userBanyBalance);

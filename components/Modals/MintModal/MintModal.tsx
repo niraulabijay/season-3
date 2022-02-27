@@ -320,7 +320,6 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
   const getApproveResponse = async (contract: Contract | null) => {
     if (currentAny && currentAny.decimal) {
       const actualAmount = MaxUint256;
-      // const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
       const res = await checkApproveResponse(
         contract,
         address,

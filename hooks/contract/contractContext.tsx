@@ -19,6 +19,7 @@ import {
   treasuryTbaNetwork,
   usdcNetwork,
   usdtNetwork,
+  islaNetwork,
 } from "../../helpers/networks";
 import { JsonRpcSigner } from "@ethersproject/providers";
 
@@ -112,10 +113,20 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
       abi: bAnyTokenAbi,
       signer: null,
     });
+    const [islaToken, setIslaToken] = useState<UsableContract>({
+      name: islaNetwork.name,
+      address: islaNetwork.address,
+      symbol: islaNetwork.symbol,
+      decimal: islaNetwork.decimals,
+      contract: null,
+      logo: islaNetwork.logoURI,
+      abi: Erc20Abi,
+      signer: null,
+    });
     useEffect(() => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const islaContract = new ethers.Contract(
+      const islaGaugeContract = new ethers.Contract(
         islaGauge.address,
         islaGauge.abi,
         provider
@@ -146,7 +157,12 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         bAnyToken.abi,
         provider
       );
-      setIslaGauge({ ...islaGauge, contract: islaContract, signer: signer });
+      const islaContract = new ethers.Contract(
+        islaToken.address,
+        islaToken.abi,
+        provider
+      );
+      setIslaGauge({ ...islaGauge, contract: islaGaugeContract, signer: signer });
       setUsdc({ ...usdc, contract: usdcContract, signer: signer });
       setUsdt({ ...usdt, contract: usdtContract, signer: signer });
       setDai({ ...dai, contract: daiContract, signer: signer });
@@ -165,6 +181,11 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         contract: bAnyContract,
         signer: signer,
       });
+      setIslaToken({
+        ...islaToken,
+        contract: islaContract,
+        signer: signer,
+      });
     }, []);
 
     const contractProvider = useMemo(
@@ -176,8 +197,9 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
         bAnyMinter,
         treasuryTba,
         bAnyToken,
+        islaToken,
       }),
-      [islaGauge, usdc, usdt, dai, bAnyMinter, treasuryTba, bAnyToken]
+      [islaGauge, usdc, usdt, dai, bAnyMinter, treasuryTba, bAnyToken, islaToken]
     );
     return (
       <ContractContext.Provider
@@ -189,6 +211,7 @@ export const ContractContextProvider: React.FC<{ children: ReactElement }> = ({
           bAnyMinter: contractProvider.bAnyMinter,
           treasuryTba: contractProvider.treasuryTba,
           bAnyToken: contractProvider.bAnyToken,
+          islaToken: contractProvider.islaToken,
         }}
       >
         {children}
