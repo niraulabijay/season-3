@@ -35,7 +35,6 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   });
   const [currentbAnyAllowance, setCurrentbAnyAllownace] =
     useState<BigNumber>(Zero);
-  console.log(tokens);
   const transactionAdder = useTransactionAdder();
   const dispatch = useAppDispatch();
   const chainId = useChainId();

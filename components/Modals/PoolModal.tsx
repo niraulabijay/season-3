@@ -34,7 +34,6 @@ const PoolModal = ({ isVisible, onClose }: PoolProps) => {
     if (usdc && usdc.contract?.methods && address) {
       const getTotalbalance = async () => {
         const balance = await getBalance(usdc.contract, address);
-        usdc.decimal && console.log(balance / usdc.decimal);
       };
       getTotalbalance();
     }

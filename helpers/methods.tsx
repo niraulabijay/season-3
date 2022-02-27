@@ -48,7 +48,6 @@ export const mintBany = (): ((
       anyaddress: string,
       amount: number | BigNumber
     ) => {
-      console.log(contract);
       return await submitTransaction(
         contract,
         account,

@@ -18,7 +18,6 @@ export const depositBany = (): ((
         address: string,
         amount: number | BigNumber
       ) => {
-        console.log(contract);
         return await submitTransaction(
           contract,
           account,
@@ -45,7 +44,6 @@ export const depositBany = (): ((
         address: string,
         amount: number | BigNumber
       ) => {
-        console.log(contract);
         return await submitTransaction(
           contract,
           account,

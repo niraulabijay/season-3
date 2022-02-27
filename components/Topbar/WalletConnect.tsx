@@ -50,7 +50,6 @@ const WalletConnect = () => {
     }
   };
   const getTbaBalance = async () => {
-    // console.log('apple')
     const tba = await getTba(tokens["treasuryTba"].contract);
     const tbaNumber = decimalToExact(tba, tokens["bAnyToken"].decimal ?? 0);
     setTba(tbaNumber);

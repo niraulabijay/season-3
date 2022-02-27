@@ -156,8 +156,6 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
     }
   };
 
-  console.log(buttonStatus, "btStatus");
-
   const checkTokenAllowance = async (currentToken: UsableContract) => {
     if (currentToken && currentToken.contract && currentToken.decimal) {
       const allowance = await checkAllowance(

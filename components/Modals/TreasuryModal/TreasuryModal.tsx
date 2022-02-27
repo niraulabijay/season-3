@@ -26,7 +26,6 @@ const TreasuryModal = ({ isVisible, onClose }: PoolProps) => {
   const handleSelectOpen = () => {
     setOpenSelect(true);
   };
-  console.log(isVisible, "treasury");
 
   const handleSelectClose = () => {
     setOpenSelect(false);

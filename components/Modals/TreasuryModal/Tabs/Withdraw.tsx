@@ -80,7 +80,6 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
   };
 
   const getWithdrawResponse = async (contract: Contract | null) => {
-    console.log(ibalance)
     if (ibalance && tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
       const actualAmount = exactToDecimal(
         ibalance,

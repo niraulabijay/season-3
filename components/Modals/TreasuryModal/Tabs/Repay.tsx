@@ -79,7 +79,6 @@ const Repay = ({
     );
     let borrowBalance;
     if (tokens["treasuryTba"]) {
-      // console.log(borrowedAnyAmount)
       const borrowBalance = decimalToExact(borrowedAnyAmount, 1);
       setBorrowedAmount(borrowBalance);
     } else {
@@ -222,14 +221,12 @@ const Repay = ({
         console.log(err, "Repay error");
       }
     }
-    console.log(contract);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
-    console.log(ibalance);
   };
 
   const handleMaximum = () => {
@@ -276,8 +273,6 @@ const Repay = ({
       checkBorrowedAny();
     });
   }, [selectedToken, address]);
-
-  console.log(buttonStatus);
 
   const ButtonDisplay = () => {
     if (currentAny) {

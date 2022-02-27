@@ -56,7 +56,6 @@ const Borrow = ({
     let borrowBalance;
     if (currentAny && currentAny.decimal) {
       const borrowBalance = decimalToExact(balance, currentAny.decimal);
-      console.log(borrowBalance);
       setBalance(borrowBalance);
     } else {
       borrowBalance = 0;
@@ -119,7 +118,6 @@ const Borrow = ({
           summary: "Mint BAny",
         });
         const { hash } = res;
-        console.log(hash, "newhash");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         provider
           .waitForTransaction(hash)
