@@ -46,7 +46,7 @@ export const daiNetwork:TokenDefinition = {
 
 export const bAnyMinterNetwork:TokenDefinition = {
   name: "BANY Minter",
-  address: "0x9CcA315d4528eCb13E608baA0DADFefae0DC9237", //new
+  address: "0xbD8BeEE407CAAC3B2f95Eb96f7Fd571a5dEb2A3F",
   symbol: "BANY Minter",
   decimals: 0,
   chainId: 137,
@@ -55,7 +55,7 @@ export const bAnyMinterNetwork:TokenDefinition = {
 
 export const treasuryTbaNetwork: TokenDefinition = {
   name: "TreasuryTBA",
-  address:"0xC65cEcA0a4bf0A80BB2b9175E1ceF16e200ab055",
+  address:"0xa91639Da94bBff6D3efE6e92AE5788a90fb0aF26",
   symbol: "TreasuryTBA",
   decimals: 0,
   chainId: 137,
