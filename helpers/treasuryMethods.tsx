@@ -15,14 +15,14 @@ export const depositBany = (): ((
       async (
         contract: Contract | null,
         account: string,
-        address: string,
+        anyaddress: string,
         amount: number | BigNumber
       ) => {
         return await submitTransaction(
           contract,
           account,
-          "lockBany(address,address)",
-          [address, amount]
+          "lockBany(address,uint256)",
+          [account, amount]
         );
       },
       []
