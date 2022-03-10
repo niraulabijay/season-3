@@ -104,7 +104,9 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   const checkApproveResponse = approveErc20Spend();
   const checkDepositResponse = depositBany();
 
+
   const getApproveResponse = async (contract: Contract | null) => {
+    console.log(contract)
     if (tokens && tokens["bAnyToken"].decimal) {
       const actualAmount = MaxUint256;
       // const actualAmount = ethers.utils.parseUnits("2000", currentAny.decimal);
@@ -226,11 +228,11 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   const handleApprove = () => {
     if (
       tokens &&
-      tokens["treasuryTba"].signer &&
-      tokens["treasuryTba"].contract
+      tokens["bAnyToken"].signer &&
+      tokens["bAnyToken"].contract
     ) {
-      const signedContract = tokens["treasuryTba"].contract.connect(
-        tokens["treasuryTba"].signer
+      const signedContract = tokens["bAnyToken"].contract.connect(
+        tokens["bAnyToken"].signer
       );
       getApproveResponse(signedContract);
     } else {
@@ -270,7 +272,7 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
       );
     } else if (ibalance > banyTotalBalance) {
       return (
-        <button className={css(styles.densed)} onClick={handleApprove}>
+        <button className={css(styles.densed)} disabled>
           Insufficient Bany Balance
         </button>
       );
