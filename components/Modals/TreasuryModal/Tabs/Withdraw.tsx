@@ -27,7 +27,7 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
   const [unlockableBany, setUnlockableBany] = useState<number | string>(0);
   const [buttonStatus, setButtonStatus] = useState({
     error: "",
-    mint: false,
+    withdraw: false,
     disable: false,
   });
 
@@ -141,40 +141,62 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIbalance(value);
-    checkDisable(value)
-  }
+    checkApproveAndDisable(value);
+  };
 
-  const checkDisable = (value: number | string) => {
+
+  const checkApproveAndDisable = (value: number | string) => {
     if (value && !isNaN(Number(value)) && value > 0) {
-        setButtonStatus({ ...buttonStatus, disable: false });
-      } else {
-        setButtonStatus({ ...buttonStatus, disable: true });
-      }
-  }
+      updateButton(value, true);
+    } else {
+      updateButton(value, false);
+    }
+  };
+
+  const updateButton = (
+    value: number | string,
+    withdraw: boolean
+  ) => {
+    let disable = true;
+    if (value > 0) {
+      disable = false;
+    }
+    setButtonStatus({
+      ...buttonStatus,
+      disable: disable,
+      withdraw: withdraw,
+    });
+  };
+
 
   const handleMaximum = () => {
-      setIbalance(unlockableBany);
-      checkDisable(ibalance);
-  }
+    setIbalance(unlockableBany);
+    checkApproveAndDisable(unlockableBany);
+  };
 
   const ButtonDisplay = () => {
-    if (ibalance > unlockableBany) {
-      return (
-        <button className={css(styles.densed)} onClick={handleWithdraw}>
-          Insufficient Bany Balance
-        </button>
-      );
-    } else if (ibalance == 0) {
+    if (
+      !ibalance ||
+      ibalance == 0 ||
+      ibalance == "" ||
+      isNaN(Number(ibalance))
+    ) {
       return (
         <button className={css(styles.densed)} disabled>
           Enter Amount
         </button>
       );
+    } else if (ibalance > unlockableBany) {
+      return (
+        <button className={css(styles.densed)} disabled>
+          Insufficient Bany Balance
+        </button>
+      );
     } else {
-      if (buttonStatus.mint && !buttonStatus.disable) {
+      if (buttonStatus.withdraw) {
         return (
           <button className={css(styles.densed)} onClick={handleWithdraw}>
-            Deposit
+            Withdraw
           </button>
         );
       } else {
@@ -191,8 +213,16 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
     <div className={checkContent("withdraw")}>
       <div className={css(styles.title)}>Deposited: {banyDeposited} BANY</div>
       <div className={css(styles.mintFullInnerWrap)}>
-        <input type="text" className={css(styles.input)} placeholder="0.00" value={ibalance} onChange={handleChange} />
-        <div className={css(styles.maxFullBtn)} onClick={handleMaximum}>Max</div>
+        <input
+          type="text"
+          className={css(styles.input)}
+          placeholder="0.00"
+          value={ibalance}
+          onChange={handleChange}
+        />
+        <div className={css(styles.maxFullBtn)} onClick={handleMaximum}>
+          Max
+        </div>
       </div>
       <div className={css(styles.title)}>Withdraw Allowed Assets:</div>
       <div className={css(styles.subTitle)}>BANY: {unlockableBany} Bany</div>
