@@ -84,7 +84,7 @@ export const maxBanyToUnlock = (): ((
     userAddress: string
   ) => any) => {
     return useCallback(async (contract: Contract | null, userAddress: string) => {
-      return await evaluateTransaction(contract, "borrowers", [userAddress]);
+      return await evaluateTransaction(contract, "maxAnyToBorrow", [userAddress]);
     }, []);
   };
 
@@ -95,7 +95,7 @@ export const borrowedAny = (): ((
   userAddress: string
 ) => any) => {
   return useCallback(async (contract: Contract | null, userAddress: string) => {
-    return await evaluateTransaction(contract, "maxAnyToBorrow", [userAddress]);
+    return await evaluateTransaction(contract, "borrowers", [userAddress]);
   }, []);
 };
 

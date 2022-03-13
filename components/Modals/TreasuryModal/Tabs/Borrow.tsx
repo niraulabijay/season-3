@@ -54,8 +54,8 @@ const Borrow = ({
       address
     );
     let borrowBalance;
-    if (currentAny && currentAny.decimal) {
-      const borrowBalance = decimalToExact(balance, currentAny.decimal);
+    if (tokens["bAnyToken"] && tokens["bAnyToken"].decimal ) {
+      const borrowBalance = decimalToExact(balance, tokens["bAnyToken"].decimal);
       setBalance(borrowBalance);
     } else {
       borrowBalance = 0;
@@ -258,7 +258,7 @@ const Borrow = ({
         </div>
       </div>
       <div className={css(styles.subTitle)}>
-        Borrowed Amount: {borrowedAmount} amount
+        Borrowed Amount: {borrowedAmount} ANY
       </div>
       <div className={css(styles.footer)}>
         <ButtonDisplay />
