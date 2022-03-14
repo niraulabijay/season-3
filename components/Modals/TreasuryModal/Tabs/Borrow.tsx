@@ -54,8 +54,11 @@ const Borrow = ({
       address
     );
     let borrowBalance;
-    if (currentAny && currentAny.decimal) {
-      const borrowBalance = decimalToExact(balance, currentAny.decimal);
+    if (tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
+      const borrowBalance = decimalToExact(
+        balance,
+        tokens["bAnyToken"].decimal
+      );
       setBalance(borrowBalance);
     } else {
       borrowBalance = 0;
@@ -158,24 +161,35 @@ const Borrow = ({
   const handleMaximum = () => {
     if (selectedToken) {
       setIbalance(balance);
-      checkDisable(balance);
+      checkApproveAndDisable(balance);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setIbalance(value);
-    checkDisable(value);
+    checkApproveAndDisable(value);
   };
 
-  const checkDisable = (value: number | string) => {
-    if (value && !isNaN(Number(value)) && value > 0) {
-      setButtonStatus({ ...buttonStatus, disable: false });
+  const checkApproveAndDisable = (value: number | string) => {
+    if (currentAny && currentAny.decimal && value && !isNaN(Number(value))) {
+      updateButton(value, true);
     } else {
-      setButtonStatus({ ...buttonStatus, disable: true });
+      updateButton(value, false);
     }
   };
 
+  const updateButton = (value: number | string, mint: boolean) => {
+    let disable = true;
+    if (value > 0) {
+      disable = false;
+    }
+    setButtonStatus({
+      ...buttonStatus,
+      disable: disable,
+      mint: mint,
+    });
+  };
   const ButtonDisplay = () => {
     if (currentAny) {
       if (ibalance > balance) {
@@ -258,7 +272,7 @@ const Borrow = ({
         </div>
       </div>
       <div className={css(styles.subTitle)}>
-        Borrowed Amount: {borrowedAmount} amount
+        Borrowed Amount: {borrowedAmount} ANY
       </div>
       <div className={css(styles.footer)}>
         <ButtonDisplay />
