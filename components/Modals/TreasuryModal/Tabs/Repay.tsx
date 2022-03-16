@@ -78,8 +78,8 @@ const Repay = ({
       address
     );
     let borrowBalance;
-    if (tokens["treasuryTba"]) {
-      const borrowBalance = decimalToExact(borrowedAnyAmount, 1);
+    if (tokens["treasuryTba"] && tokens["bAnyToken"].decimal) {
+      const borrowBalance = decimalToExact(borrowedAnyAmount, tokens["bAnyToken"].decimal);
       setBorrowedAmount(borrowBalance);
     } else {
       borrowBalance = 0;
