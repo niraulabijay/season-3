@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { css } from "aphrodite";
 import { Styles } from "../Styles";
-import { Contract, ethers } from "ethers";
+import { BigNumber, Contract, ethers } from "ethers";
 import { decimalToExact, exactToDecimal } from "../../../../helpers/conversion";
 import { finalizeTransaction } from "../../../../state/transactions/actions";
 import { useTransactionAdder } from "../../../../state/transactions/hooks";
@@ -24,6 +24,8 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
   const styles = Styles();
   const [banyDeposited, setBanyDeposited] = useState(0);
   const [ibalance, setIbalance] = useState<string | number>(0);
+  const [hexBalance, setHexBalance] = useState<BigNumber | null>();
+  const [iHexBalance, setIHexBalance] = useState<BigNumber | null>();
   const [unlockableBany, setUnlockableBany] = useState<number | string>(0);
   const [buttonStatus, setButtonStatus] = useState({
     error: "",
@@ -41,6 +43,7 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
 
   const getDepositedBany = async () => {
     const balance = await getBany(tokens["treasuryTba"].contract, address);
+    console.log(balance, 'Deposited BANY');
     let userBalance;
     if (tokens && tokens["bAnyToken"].decimal) {
       const userBalance = decimalToExact(balance, tokens["bAnyToken"].decimal);
@@ -56,6 +59,8 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
       tokens["treasuryTba"].contract,
       address
     );
+    setHexBalance(balance);
+    setIHexBalance(balance);
     let userBalance;
     if (tokens && tokens["bAnyToken"].decimal) {
       const userBalance = decimalToExact(balance, tokens["bAnyToken"].decimal);
@@ -81,10 +86,11 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
 
   const getWithdrawResponse = async (contract: Contract | null) => {
     if (ibalance && tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
-      const actualAmount = exactToDecimal(
+      const actualAmount = hexBalance ? hexBalance : exactToDecimal(
         ibalance,
         tokens["bAnyToken"].decimal
       );
+      console.log(actualAmount);
       try {
         const res = await submitWithdrawBany(
           contract,
@@ -139,6 +145,7 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
   }, [address]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHexBalance(null);
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
@@ -170,6 +177,7 @@ const Withdraw = ({ checkContent, address, tokens }: DepositProps) => {
 
 
   const handleMaximum = () => {
+    setHexBalance(iHexBalance);
     setIbalance(unlockableBany);
     checkApproveAndDisable(unlockableBany);
   };

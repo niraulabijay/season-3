@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { css } from "aphrodite";
 import { Styles } from "../Styles";
-import { Contract, ethers } from "ethers";
+import { BigNumber, Contract, ethers } from "ethers";
 import { decimalToExact, exactToDecimal } from "../../../../helpers/conversion";
 import { finalizeTransaction } from "../../../../state/transactions/actions";
 import { useTransactionAdder } from "../../../../state/transactions/hooks";
@@ -14,6 +14,7 @@ import {
 } from "../../../../helpers/treasuryMethods";
 import { TokenDefinition } from "../../../../helpers/networks";
 import { useDispatch } from "react-redux";
+import { fetchErc20Balance } from "../../../../helpers/methods";
 
 type DepositProps = {
   checkContent: (name: string) => any;
@@ -38,6 +39,9 @@ const Borrow = ({
   const [currentAny, setCurrentAny] = useState<UsableContract | null>(null);
   const [ibalance, setIbalance] = useState<number | string>(0);
   const [balance, setBalance] = useState(0);
+  const [hexBalance, setHexBalance] = useState<BigNumber | null>(null);
+  const [iHexBalance, setIHexBalance] = useState<BigNumber | null>(null);
+  const [anyTreasuryBalance, setAnyTreasuryBalance] = useState(0);
   const [buttonStatus, setButtonStatus] = useState({
     error: "",
     mint: false,
@@ -47,12 +51,16 @@ const Borrow = ({
   const getBorrowBalance = maxAnyToBorrow();
   const submitBorrowResponse = borrowAny();
   const getBorrowedAny = borrowedAny();
+  const getTreasuryBalance = fetchErc20Balance();
 
   const getBorrowableAny = async () => {
     const balance = await getBorrowBalance(
       tokens["treasuryTba"].contract,
       address
     );
+    setHexBalance(balance);
+    setIHexBalance(balance);
+    console.log(balance, "Borrowable ANY");
     let borrowBalance;
     if (tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
       const borrowBalance = decimalToExact(
@@ -71,6 +79,7 @@ const Borrow = ({
       tokens["treasuryTba"].contract,
       address
     );
+    console.log(borrowedAnyAmount, "Borrowed Any");
     let borrowBalance;
     if (tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
       const borrowBalance = decimalToExact(
@@ -84,15 +93,34 @@ const Borrow = ({
     }
   };
 
+  const getTreasuryAnyBalance = async () => {
+    if (currentAny?.contract && tokens["treasuryTba"] && tokens["treasuryTba"].address) {
+      console.log(currentAny?.contract, tokens["treasuryTba"].address)
+      const anyBalance = await getTreasuryBalance(
+        currentAny?.contract,
+        tokens["treasuryTba"]?.address
+      );
+      let borrowBalance;
+      if (currentAny && currentAny?.decimal) {
+        const borrowBalance = decimalToExact(anyBalance, currentAny?.decimal);
+        setAnyTreasuryBalance(borrowBalance);
+      } else {
+        borrowBalance = 0;
+        setAnyTreasuryBalance(borrowBalance);
+      }
+    }
+  };
+
   useEffect(() => {
     Object.keys(tokens).map((token) => {
       if (selectedToken?.address == tokens[token].address) {
         setCurrentAny(tokens[token]);
         getBorrowableAny();
+        getTreasuryAnyBalance();
       }
     });
     checkBorrowedAny();
-  }, [address, selectedToken]);
+  }, [address, selectedToken, currentAny]);
 
   const handleBorrow = () => {
     if (
@@ -109,7 +137,7 @@ const Borrow = ({
 
   const getBorrowResponse = async (contract: Contract | null) => {
     if (ibalance && currentAny && currentAny.decimal) {
-      const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
+      const actualAmount = hexBalance ? hexBalance : exactToDecimal(ibalance, currentAny.decimal);
       try {
         const res = await submitBorrowResponse(
           contract,
@@ -160,12 +188,14 @@ const Borrow = ({
 
   const handleMaximum = () => {
     if (selectedToken) {
+      setHexBalance(iHexBalance);
       setIbalance(balance);
       checkApproveAndDisable(balance);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHexBalance(null)
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
@@ -191,8 +221,9 @@ const Borrow = ({
     });
   };
   const ButtonDisplay = () => {
+    console.log(anyTreasuryBalance, ibalance, balance)
     if (currentAny) {
-      if (ibalance > balance) {
+      if (ibalance > balance || ibalance > anyTreasuryBalance) {
         return (
           <button className={css(styles.densed)} onClick={handleBorrow}>
             Insufficient {selectedToken?.symbol} balance
@@ -233,7 +264,7 @@ const Borrow = ({
       <div className={css(styles.mintInputWrapper)}>
         <div className={css(styles.mintTitle)}>
           <span>
-            Available To Borrow: {balance} {currentAny?.symbol || ""}
+            Balance: {balance} {currentAny?.symbol || ""}
           </span>
           <span className={css(styles.from)}>From</span>
         </div>
@@ -274,6 +305,11 @@ const Borrow = ({
       <div className={css(styles.subTitle)}>
         Borrowed Amount: {borrowedAmount} ANY
       </div>
+      {anyTreasuryBalance ? (
+        <div className={css(styles.subTitle)}>
+          Treasury Balance: {anyTreasuryBalance} ANY
+        </div>
+      ) : null}
       <div className={css(styles.footer)}>
         <ButtonDisplay />
       </div>

@@ -44,6 +44,8 @@ const Repay = ({
 
   const [currentAny, setCurrentAny] = useState<UsableContract | null>(null);
   const [ibalance, setIbalance] = useState<string | number>(0);
+  const [hexBalance, setHexBalance] = useState<BigNumber | null>(null);
+  const [iHexBalance, setIHexBalance] = useState<BigNumber | null>(null);
   const [borrowedAmount, setBorrowedAmount] = useState(0);
   const [balance, setBalance] = useState(0);
   const [buttonStatus, setButtonStatus] = useState({
@@ -77,9 +79,15 @@ const Repay = ({
       tokens["treasuryTba"].contract,
       address
     );
+    setHexBalance(borrowedAnyAmount);
+    setIHexBalance(borrowedAnyAmount);
+    console.log(borrowedAnyAmount, "TO Repay ANY");
     let borrowBalance;
     if (tokens["treasuryTba"] && tokens["bAnyToken"].decimal) {
-      const borrowBalance = decimalToExact(borrowedAnyAmount, tokens["bAnyToken"].decimal);
+      const borrowBalance = decimalToExact(
+        borrowedAnyAmount,
+        tokens["bAnyToken"].decimal
+      );
       setBorrowedAmount(borrowBalance);
     } else {
       borrowBalance = 0;
@@ -174,62 +182,67 @@ const Repay = ({
 
   const getRepayResponse = async (contract: Contract | null) => {
     if (ibalance && currentAny && currentAny.decimal) {
-      const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
-      try {
-        const res = await checkRepayResponse(
-          contract,
-          address,
-          currentAny.address,
-          actualAmount
-        );
-        transactionAdder(res, {
-          summary: "Repay Any",
-        });
-        const { hash } = res;
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        provider
-          .waitForTransaction(hash)
-          .then((receipt) => {
-            dispatch(
-              finalizeTransaction({
-                chainId: chainId,
-                hash: hash,
-                receipt: {
-                  blockHash: receipt.blockHash,
-                  blockNumber: receipt.blockNumber,
-                  contractAddress: receipt.contractAddress,
-                  from: receipt.from,
-                  status: receipt.status,
-                  to: receipt.to,
-                  transactionHash: receipt.transactionHash,
-                  transactionIndex: receipt.transactionIndex,
-                },
-              })
-            );
-            // check Any Balance here
-          })
-          .catch((err) => {
-            dispatch(
-              finalizeTransaction({
-                chainId,
-                hash,
-                receipt: "failed",
-              })
-            );
-          });
-      } catch (err) {
-        console.log(err, "Repay error");
-      }
+      const actualAmount = hexBalance
+        ? hexBalance
+        : exactToDecimal(ibalance, currentAny.decimal);
+      console.log(actualAmount);
+      // try {
+      //   const res = await checkRepayResponse(
+      //     contract,
+      //     address,
+      //     currentAny.address,
+      //     actualAmount
+      //   );
+      //   transactionAdder(res, {
+      //     summary: "Repay Any",
+      //   });
+      //   const { hash } = res;
+      //   const provider = new ethers.providers.Web3Provider(window.ethereum);
+      //   provider
+      //     .waitForTransaction(hash)
+      //     .then((receipt) => {
+      //       dispatch(
+      //         finalizeTransaction({
+      //           chainId: chainId,
+      //           hash: hash,
+      //           receipt: {
+      //             blockHash: receipt.blockHash,
+      //             blockNumber: receipt.blockNumber,
+      //             contractAddress: receipt.contractAddress,
+      //             from: receipt.from,
+      //             status: receipt.status,
+      //             to: receipt.to,
+      //             transactionHash: receipt.transactionHash,
+      //             transactionIndex: receipt.transactionIndex,
+      //           },
+      //         })
+      //       );
+      //       // check Any Balance here
+      //     })
+      //     .catch((err) => {
+      //       dispatch(
+      //         finalizeTransaction({
+      //           chainId,
+      //           hash,
+      //           receipt: "failed",
+      //         })
+      //       );
+      //     });
+      // } catch (err) {
+      //   console.log(err, "Repay error");
+      // }
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHexBalance(null);
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
   };
 
   const handleMaximum = () => {
+    setHexBalance(iHexBalance);
     setIbalance(borrowedAmount);
     checkApproveAndDisable(borrowedAmount);
   };
@@ -282,6 +295,8 @@ const Repay = ({
             Insufficient {selectedToken?.symbol} balance
           </button>
         );
+      } else if (ibalance > borrowedAmount) {
+        return <button className={css(styles.densed)}>Repay Amount Exceeded</button>;
       } else if (ibalance == 0) {
         return (
           <button className={css(styles.densed)} disabled>
