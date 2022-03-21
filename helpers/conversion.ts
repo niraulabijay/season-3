@@ -21,3 +21,5 @@ export const exactToDecimal = (value: number|string, decimals: number) => {
     decimals
   );
 }
+
+// Convert Big Number with Decimal Place Zeros to total Value (eg: wei(BN) to ether(BN))

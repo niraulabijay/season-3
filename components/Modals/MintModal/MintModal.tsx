@@ -43,6 +43,8 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [balance, setBalance] = useState(0);
   const [ibalance, setIbalance] = useState<number | string>();
+  const [hexBalance, setHexBalance] = useState<BigNumber | null>();
+  const [iHexBalance, setIHexBalance] = useState<BigNumber | null>();
   const [totalanyLeft, setTotalanyLeft] = useState(0);
   const [totalbanyLeft, setTotalbanyLeft] = useState(0);
   const [buttonStatus, setButtonStatus] = useState({
@@ -66,11 +68,13 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
   };
 
   const handleMaximum = () => {
-    setIbalance(balance);
-    checkApproveAndDisable(balance);
+      setHexBalance(iHexBalance);
+      setIbalance(balance);
+      checkApproveAndDisable(balance);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHexBalance(null)
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
@@ -113,6 +117,8 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
     const balance = await getBalance(currentToken.contract, address);
     let userBalance;
     if (currentToken && currentToken.decimal) {
+      setHexBalance(balance)
+      setIHexBalance(balance)
       const userBalance = decimalToExact(balance, currentToken.decimal);
       setBalance(userBalance);
     } else {
@@ -266,7 +272,8 @@ const MintModalDetails = ({ onClose }: DetailProps) => {
 
   const getMintResponse = async (contract: Contract | null) => {
     if (ibalance && currentAny && currentAny.decimal) {
-      const actualAmount = exactToDecimal(ibalance, currentAny.decimal);
+      const actualAmount = hexBalance ? hexBalance : exactToDecimal(ibalance, currentAny.decimal);
+      console.log(actualAmount)
       try {
         const res = await checkMintResponse(
           contract,

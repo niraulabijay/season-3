@@ -27,6 +27,8 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   const styles = Styles();
   const [banyTotalBalance, setBanyTotalBalance] = useState(0);
   const [ibalance, setIbalance] = useState<number | string>(0);
+  const [hexBalance, setHexBalance] = useState<BigNumber | null>();
+  const [iHexBalance, setIHexBalance] = useState<BigNumber | null>();
   const [buttonStatus, setButtonStatus] = useState({
     error: "",
     mint: false,
@@ -44,6 +46,8 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
 
   const getTotalBalance = async () => {
     const banyBalance = await getBalance(tokens["bAnyToken"].contract, address);
+    setHexBalance(banyBalance);
+    setIHexBalance(banyBalance);
     let userBanyBalance;
     if (tokens && tokens["bAnyToken"].decimal) {
       const userBanyBalance = decimalToExact(
@@ -58,12 +62,14 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
   };
 
   const handleIbalance = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHexBalance(null)
     const value = e.target.value;
     setIbalance(value);
     checkApproveAndDisable(value);
   };
 
   const handleMaximum = () => {
+    setHexBalance(iHexBalance)
     setIbalance(banyTotalBalance);
     checkApproveAndDisable(banyTotalBalance);
   };
@@ -161,10 +167,11 @@ const Deposit = ({ checkContent, address, tokens }: DepositProps) => {
 
   const getDepositResponse = async (contract: Contract | null) => {
     if (ibalance && tokens["bAnyToken"] && tokens["bAnyToken"].decimal) {
-      const actualAmount = exactToDecimal(
+      const actualAmount = hexBalance ? hexBalance: exactToDecimal(
         ibalance,
         tokens["bAnyToken"].decimal
       );
+      // console.log(actualAmount)
       try {
         const res = await checkDepositResponse(
           contract,
