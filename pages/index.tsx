@@ -11,12 +11,14 @@ import AnimalsModal from "../components/Modals/AnimalsModal";
 import PirateModal from "../components/Modals/PirateModal";
 import TreasuryModal from "../components/Modals/TreasuryModal/TreasuryModal";
 import MintModal from "../components/Modals/MintModal/MintModal";
+import SwapModal from "../components/Modals/SwapModal/SwapModal";
 
 const Home: NextPage = () => {
   const styles = Styles();
   const [openFactory, setOpenFactory] = useState(false);
   const [openAnimal, setOpenAnimal] = useState(false);
   const [openBanyMinter, setOpenBanyMinter] = useState(false);
+  const [openSwap, setOpenSwap] = useState(false);
   const [openPirate, setOpenPirate] = useState(false);
 
   const handleFactoryOpen = () => {
@@ -43,6 +45,12 @@ const Home: NextPage = () => {
   const handlePirateClose = () => {
     setOpenPirate(false);
   };
+  const handleSwapOpen = () => {
+    setOpenSwap(true);
+  };
+  const handleSwapClose = () => {
+    setOpenSwap(false);
+  };
 
   return (
     <>
@@ -58,7 +66,7 @@ const Home: NextPage = () => {
               priority
             />
           </div>
-          <div className={css(styles.animals)} onClick={handleAnimalOpen}>
+          <div className={css(styles.animals)} onClick={handleSwapOpen}>
             <Image
               src={animals}
               layout="fill"
@@ -94,6 +102,7 @@ const Home: NextPage = () => {
       {/* <PoolModal isVisible={openPool} onClose={handlePoolClose}  /> */}
       <MintModal isVisible={openBanyMinter} onClose={handleBanyMinterClose} />
       <TreasuryModal isVisible={openFactory} onClose={handleFactoryClose} />
+      <SwapModal isVisible={openSwap} onClose={handleSwapClose} />
     </>
   );
 };
